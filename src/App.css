@@ -1,0 +1,22 @@
+:root { font-family: system-ui, sans-serif; color-scheme: light dark; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+.app { max-width: 960px; margin: 0 auto; padding: 1rem; }
+.app-header h1 { margin: 0 0 0.5rem; font-size: 1.4rem; }
+.location-search { position: relative; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.location-search input { flex: 1; min-width: 12rem; padding: 0.5rem; }
+.location-results { list-style: none; margin: 0.25rem 0; padding: 0; border: 1px solid #ccc; position: absolute; top: 2.5rem; background: Canvas; z-index: 10; width: 100%; }
+.location-results button { display: block; width: 100%; text-align: left; padding: 0.5rem; border: 0; background: none; cursor: pointer; }
+.location-results button:hover { background: rgba(127,127,127,0.2); }
+.tabs { display: flex; gap: 0.5rem; margin: 1rem 0; }
+.tabs button { padding: 0.5rem 1rem; cursor: pointer; }
+.tabs button[aria-selected='true'] { font-weight: 700; border-bottom: 2px solid currentColor; }
+.date-range-picker, .date-picker { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.date-range-picker label, .date-picker label { display: flex; flex-direction: column; }
+.chart { margin-bottom: 2rem; }
+.day-card { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1rem; }
+.day-card div { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(127,127,127,0.3); padding: 0.25rem 0; }
+.day-card dt { font-weight: 600; }
+.day-card dd { margin: 0; }
+.error { color: #c0392b; }
+.hint, .loading { opacity: 0.8; }
