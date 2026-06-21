@@ -5,8 +5,23 @@ import { DateRangePicker } from '../components/DateRangePicker'
 import { TemperatureChart } from '../components/TemperatureChart'
 import { PrecipitationChart } from '../components/PrecipitationChart'
 import { WindChart } from '../components/WindChart'
-import { validateRange } from '../lib/dates'
+import { validateRange, maxDate, toISODate } from '../lib/dates'
 import type { WeatherParams } from '../api/weather'
+
+interface Preset { label: string; days: number }
+const PRESETS: Preset[] = [
+  { label: '7 jours', days: 7 },
+  { label: '30 jours', days: 30 },
+  { label: '90 jours', days: 90 },
+  { label: '1 an', days: 365 },
+]
+
+function rangeForDays(days: number): { start: string; end: string } {
+  const end = maxDate()
+  const startDate = new Date(`${end}T00:00:00Z`)
+  startDate.setUTCDate(startDate.getUTCDate() - (days - 1))
+  return { start: toISODate(startDate), end }
+}
 
 export function ChartsView() {
   const { location } = useLocation()
@@ -21,19 +36,53 @@ export function ChartsView() {
 
   const { data, isFetching, isError } = useWeather(params)
 
-  if (!location) return <p className="hint">Choisissez un lieu pour commencer.</p>
+  if (!location) {
+    return (
+      <div className="empty-state">
+        <div className="empty-state__icon">📍</div>
+        <h2>Choisissez un lieu pour commencer</h2>
+        <p>Recherchez une ville ci-dessus pour explorer son historique météo.</p>
+      </div>
+    )
+  }
+
+  function applyPreset(days: number) {
+    const r = rangeForDays(days)
+    setStart(r.start)
+    setEnd(r.end)
+  }
 
   return (
     <section className="charts-view">
-      <DateRangePicker start={start} end={end} onChange={(s, e) => { setStart(s); setEnd(e) }} />
-      {isFetching && <p className="loading">Chargement…</p>}
-      {isError && <p className="error">Impossible de récupérer les données. Réessayez.</p>}
-      {data && (
-        <>
+      <div className="toolbar">
+        <DateRangePicker start={start} end={end} onChange={(s, e) => { setStart(s); setEnd(e) }} />
+        <div className="presets">
+          {PRESETS.map((p) => (
+            <button key={p.days} type="button" className="chip" onClick={() => applyPreset(p.days)}>
+              {p.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {!rangeValid && !isFetching && (
+        <div className="empty-state empty-state--soft">
+          <div className="empty-state__icon">📈</div>
+          <p>Sélectionnez une période ou un raccourci pour afficher les graphiques.</p>
+        </div>
+      )}
+      {isFetching && (
+        <div className="charts-grid">
+          {[0, 1, 2].map((i) => <div key={i} className="chart chart--skeleton" />)}
+        </div>
+      )}
+      {isError && <p className="error error--banner">Impossible de récupérer les données. Vérifiez votre connexion et réessayez.</p>}
+      {data && !isFetching && (
+        <div className="charts-grid">
           <TemperatureChart days={data.days} />
           <PrecipitationChart days={data.days} />
           <WindChart days={data.days} />
-        </>
+        </div>
       )}
     </section>
   )

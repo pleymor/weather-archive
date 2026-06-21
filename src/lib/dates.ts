@@ -4,6 +4,24 @@ export function toISODate(d: Date): string {
   return d.toISOString().slice(0, 10)
 }
 
+const MONTHS_FR = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.']
+
+/** Formats an ISO date (YYYY-MM-DD) to a short French label, e.g. "5 janv." */
+export function formatShortDate(iso: string): string {
+  const [, m, d] = iso.split('-')
+  const month = MONTHS_FR[Number(m) - 1] ?? ''
+  return `${Number(d)} ${month}`
+}
+
+/** Formats an ISO date to a full French label, e.g. "lundi 5 janvier 2020". */
+export function formatLongDate(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  const date = new Date(Date.UTC(y, m - 1, d))
+  return new Intl.DateTimeFormat('fr-FR', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
+  }).format(date)
+}
+
 export function maxDate(today: Date = new Date()): string {
   const yesterday = new Date(today)
   yesterday.setUTCDate(yesterday.getUTCDate() - 1)
