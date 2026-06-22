@@ -2,14 +2,13 @@ import { useMemo } from 'react'
 import { useAppState } from '../state/AppStateContext'
 import { useSettings } from '../state/SettingsContext'
 import { useFullHistory } from '../hooks/useFullHistory'
-import { MonthDayPicker } from '../components/MonthDayPicker'
 import { ThisDayChart, type ThisDayDatum } from '../components/ThisDayChart'
 import { monthDay, thisDayAcrossYears, computeRecords, climateStats, linearFit, annualExtremes } from '../lib/insights'
 import { displayTemp, displayWind, tempUnitLabel, windUnitLabel } from '../lib/units'
 import { formatLongDate, toISODate, formatShortDate } from '../lib/dates'
 
 export function YearsView() {
-  const { state, setDate } = useAppState()
+  const { state } = useAppState()
   const { units } = useSettings()
   const { location, date } = state
   const md = monthDay(date || toISODate(new Date()))
@@ -83,10 +82,6 @@ export function YearsView() {
 
   return (
     <section className="years-view">
-      <div className="toolbar">
-        <MonthDayPicker value={date} onChange={setDate} />
-      </div>
-
       {history.isLoading && (
         <>
           <p className="loading">Chargement de l'historique complet (depuis 1940)… cela peut prendre quelques secondes la première fois.</p>

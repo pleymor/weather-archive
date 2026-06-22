@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query'
 import { useAppState } from '../state/AppStateContext'
 import { useSettings } from '../state/SettingsContext'
 import { useChoropleth } from '../hooks/useChoropleth'
-import { DatePicker } from '../components/DatePicker'
 import { validateSingleDate, maxDate, formatLongDate } from '../lib/dates'
 import { displayTemp, tempUnitLabel } from '../lib/units'
 import { featureBounds, makeProjection, pathFor, centroid, pointInFeature, type GeoFeature, type GeoCollection } from '../lib/geo'
@@ -20,7 +19,7 @@ async function fetchGeo(url: string): Promise<GeoFeature[]> {
 }
 
 export function MapView() {
-  const { state, setLocation, setMode, setDate } = useAppState()
+  const { state, setLocation, setMode } = useAppState()
   const { units } = useSettings()
   const [region, setRegion] = useState<GeoFeature | null>(null)
   const [hover, setHover] = useState<string | null>(null)
@@ -60,7 +59,6 @@ export function MapView() {
   return (
     <section className="map-view">
       <div className="toolbar">
-        <DatePicker value={day} onChange={setDate} />
         <p className="years-view__hint">Carte de la température maximale du {formatLongDate(day)}.</p>
       </div>
 

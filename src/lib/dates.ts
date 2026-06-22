@@ -42,6 +42,14 @@ export function maxDate(today: Date = new Date()): string {
   return toISODate(today)
 }
 
+/** A range of the last `days` days ending at the latest available day. */
+export function rangeForDays(days: number): { start: string; end: string } {
+  const end = maxDate()
+  const startDate = new Date(`${end}T00:00:00Z`)
+  startDate.setUTCDate(startDate.getUTCDate() - (days - 1))
+  return { start: toISODate(startDate), end }
+}
+
 type Result = { ok: true } | { ok: false; error: string }
 
 function inBounds(date: string, max: string): Result {

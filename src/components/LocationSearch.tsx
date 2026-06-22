@@ -9,7 +9,7 @@ function subtitle(loc: Location): string {
   return [loc.admin1, loc.country].filter(Boolean).join(', ')
 }
 
-export function LocationSearch() {
+export function LocationSearch({ onSelect }: { onSelect?: () => void } = {}) {
   const { setLocation } = useLocation()
   const [query, setQuery] = useState('')
   const [debounced, setDebounced] = useState('')
@@ -41,6 +41,7 @@ export function LocationSearch() {
     setRecents(addRecent(loc))
     setQuery(loc.name)
     setOpen(false)
+    onSelect?.()
   }
 
   function star(loc: Location, e: React.MouseEvent) {

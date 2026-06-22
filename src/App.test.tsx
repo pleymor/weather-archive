@@ -25,8 +25,9 @@ describe('App', () => {
     expect(screen.getByRole('tab', { name: /jour/i })).toHaveAttribute('aria-selected', 'true')
   })
 
-  it('renders the location search', () => {
+  it('opens the location search from the context bar', async () => {
     renderApp()
+    await userEvent.click(screen.getByRole('button', { name: /choisir un lieu/i }))
     expect(screen.getByLabelText(/rechercher un lieu/i)).toBeInTheDocument()
   })
 })

@@ -116,16 +116,7 @@ body {
 /* ============================================================
    Header / brand
    ============================================================ */
-.app-header { margin-bottom: 1.75rem; }
-.header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
-.header-top .brand { margin-bottom: 0; }
-.header-controls { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-.seg { display: inline-flex; padding: 0.2rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-pill); box-shadow: var(--shadow-sm); backdrop-filter: blur(12px); }
-.seg button { border: 0; background: none; cursor: pointer; font: inherit; font-size: 0.82rem; font-weight: 700; color: var(--text-dim); padding: 0.32rem 0.7rem; border-radius: var(--radius-pill); transition: color 0.15s, background 0.15s; }
-.seg button.is-active { color: #fff; background: var(--accent-grad); }
-.seg-select { font: inherit; font-size: 0.82rem; font-weight: 600; color: var(--text); padding: 0.4rem 0.6rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-pill); cursor: pointer; box-shadow: var(--shadow-sm); }
-.share-btn { font: inherit; font-size: 0.82rem; font-weight: 700; color: var(--accent); padding: 0.42rem 0.85rem; background: var(--accent-soft); border: 1px solid transparent; border-radius: var(--radius-pill); cursor: pointer; transition: background 0.15s; }
-.share-btn:hover { background: var(--surface); border-color: var(--accent); }
+.app-header { margin-bottom: 1.5rem; }
 .toolbar__actions { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
 .chip--action { color: var(--accent); border-color: var(--accent); }
 .brand { display: flex; align-items: center; gap: 0.85rem; margin-bottom: 1.25rem; }
@@ -151,16 +142,37 @@ body {
 }
 .brand__tag { margin: 0.1rem 0 0; color: var(--text-dim); font-size: 0.9rem; }
 
-.current-location {
-  display: inline-flex; align-items: center; gap: 0.35rem;
-  margin: 0.85rem 0 0;
-  padding: 0.3rem 0.7rem;
-  font-size: 0.85rem; font-weight: 600;
-  color: var(--accent);
-  background: var(--accent-soft);
+/* Sticky context bar: shows and edits the current location + date/period. */
+.context-bar { position: sticky; top: 0.5rem; z-index: 40; margin: 0 0 1.25rem; }
+.context-bar__row {
+  display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;
+  padding: 0.45rem 0.6rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: var(--radius-pill);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
 }
-.current-location svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; }
+.context-bar__chip {
+  font: inherit; font-size: 0.9rem; font-weight: 700; color: var(--text);
+  background: none; border: 0; cursor: pointer;
+  padding: 0.3rem 0.6rem; border-radius: var(--radius-pill);
+  transition: background 0.15s, color 0.15s;
+}
+.context-bar__chip:hover,
+.context-bar__chip[aria-expanded='true'] { background: var(--accent-soft); color: var(--accent); }
+.context-bar__chip--date { color: var(--text-dim); }
+.context-bar__sep { color: var(--text-faint); }
+.context-bar__pop {
+  position: absolute; left: 0; right: 0; top: calc(100% + 0.4rem);
+  z-index: 60;
+  padding: 0.9rem;
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+}
+.date-editor { display: flex; flex-direction: column; gap: 0.8rem; }
 
 /* ============================================================
    Location search

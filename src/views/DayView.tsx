@@ -3,7 +3,6 @@ import { useAppState } from '../state/AppStateContext'
 import { useSettings } from '../state/SettingsContext'
 import { useWeather } from '../hooks/useWeather'
 import { useHourly } from '../hooks/useHourly'
-import { DatePicker } from '../components/DatePicker'
 import { HourlyForecast } from '../components/HourlyForecast'
 import { validateSingleDate, formatLongDate, maxDate } from '../lib/dates'
 import { displayTemp, displayWind, tempUnitLabel, windUnitLabel } from '../lib/units'
@@ -59,10 +58,6 @@ export function DayView() {
 
   return (
     <section className="day-view">
-      <div className="toolbar">
-        <DatePicker value={date} onChange={setDate} />
-      </div>
-
       {!dateValid && !isFetching && (
         <div className="empty-state empty-state--soft">
           <div className="empty-state__icon">📅</div>
