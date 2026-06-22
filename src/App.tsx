@@ -8,11 +8,11 @@ import { useAppState } from './state/AppStateContext'
 import type { AppMode } from './lib/urlState'
 import './App.css'
 
-const TABS: { mode: AppMode; label: string }[] = [
-  { mode: 'charts', label: '📈 Graphiques' },
-  { mode: 'day', label: '📅 Un jour donné' },
-  { mode: 'years', label: '📜 Records & histoire' },
-  { mode: 'map', label: '🗺️ Carte' },
+const TABS: { mode: AppMode; icon: string; label: string }[] = [
+  { mode: 'charts', icon: '📈', label: 'Graphiques' },
+  { mode: 'day', icon: '📅', label: 'Jour' },
+  { mode: 'years', icon: '📜', label: 'Records' },
+  { mode: 'map', icon: '🗺️', label: 'Carte' },
 ]
 
 function renderView(mode: AppMode) {
@@ -58,7 +58,8 @@ export default function App() {
       <nav className="tabs" role="tablist" aria-label="Mode d'affichage">
         {TABS.map((t) => (
           <button key={t.mode} role="tab" aria-selected={state.mode === t.mode} onClick={() => setMode(t.mode)}>
-            {t.label}
+            <span className="tab__icon" aria-hidden="true">{t.icon}</span>
+            <span className="tab__label">{t.label}</span>
           </button>
         ))}
       </nav>
