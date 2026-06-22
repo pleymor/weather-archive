@@ -2,7 +2,9 @@ import { useEffect } from 'react'
 import { useAppState } from '../state/AppStateContext'
 import { useSettings } from '../state/SettingsContext'
 import { useWeather } from '../hooks/useWeather'
+import { useHourly } from '../hooks/useHourly'
 import { DatePicker } from '../components/DatePicker'
+import { HourlyForecast } from '../components/HourlyForecast'
 import { validateSingleDate, formatLongDate, maxDate } from '../lib/dates'
 import { displayTemp, displayWind, tempUnitLabel, windUnitLabel } from '../lib/units'
 import type { WeatherParams } from '../api/weather'
@@ -31,6 +33,7 @@ export function DayView() {
 
   const { data, isFetching, isError } = useWeather(params)
   const day = data?.days[0]
+  const hourly = useHourly(location, dateValid ? date : '')
 
   if (!location) {
     return (
@@ -82,6 +85,12 @@ export function DayView() {
               </div>
             ))}
           </dl>
+          {hourly.data && hourly.data.length > 0 && (
+            <>
+              <h3 className="day-view__subtitle">Heure par heure</h3>
+              <HourlyForecast hours={hourly.data} units={units} />
+            </>
+          )}
         </>
       )}
     </section>
