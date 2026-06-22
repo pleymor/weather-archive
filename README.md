@@ -37,6 +37,75 @@ Les données historiques sont immuables et mises en cache de façon permanente d
 IndexedDB ; l'app est installable et consultable hors-ligne pour les requêtes déjà
 chargées.
 
+## Fonctionnement technique
+
+### Architecture
+
+Application 100 % front-end. L'état applicatif (mode, lieu, période ou date, lieu de
+comparaison) vit dans un contexte React et est sérialisé dans l'URL (`lib/urlState`)
+— d'où les liens partageables. Les vues (`ChartsView`, `DayView`, `YearsView`,
+`MapView`) lisent cet état et déclenchent les requêtes via des hooks TanStack Query :
+`useWeather` (série sur une période), `useHourly` (heure par heure), `useNormals`
+(normales 1991-2020), `useFullHistory` (tout l'historique d'un lieu) et
+`useChoropleth` (carte).
+
+### Récupération des données météo
+
+Les données historiques étant immuables, la récupération est **cache-first sur deux
+niveaux** :
+
+1. **Cache mémoire** de TanStack Query (`staleTime: Infinity`) — réponse instantanée
+   si la requête a déjà été faite dans la session.
+2. **Cache persistant IndexedDB** (`cache/weatherCache`), clé `lat|lon|start|end` —
+   survit aux rechargements et permet la consultation **hors-ligne**.
+
+Le réseau (`fetchWeather` → Archive API) n'est sollicité que si les deux caches sont
+vides ; la réponse JSON est normalisée (`normalizeArchiveResponse`) en `WeatherSeries`
+puis stockée. Les erreurs **429** (rate-limit Open-Meteo) sont rejouées avec un backoff
+exponentiel (2 s → 4 s → 8 s) et la carte limite la concurrence à 4 requêtes
+simultanées. Le même chemin sert le mode « Un jour donné » (période d'un seul jour).
+
+```mermaid
+sequenceDiagram
+    actor U as Utilisateur
+    participant V as Vue (ChartsView)
+    participant Q as useWeather (TanStack Query)
+    participant C as IndexedDB (weatherCache)
+    participant API as Open-Meteo Archive API
+
+    U->>V: choisit un lieu + une période
+    V->>V: construit WeatherParams {lat, lon, startDate, endDate}
+    V->>Q: useWeather(params)
+    Note over Q: queryKey = ["weather", cacheKey]<br/>cacheKey = "lat|lon|start|end"
+
+    alt déjà en cache mémoire (staleTime ∞)
+        Q-->>V: WeatherSeries (immédiat)
+    else queryFn exécutée
+        Q->>C: getCachedWeather(params)
+        alt présent dans IndexedDB
+            C-->>Q: WeatherSeries (hors-ligne possible)
+        else absent
+            Q->>API: GET /v1/archive?latitude&longitude&start_date&end_date&daily=…
+            alt réponse OK
+                API-->>Q: JSON brut (daily: time[], temperature_2m_max[], …)
+                Q->>Q: normalizeArchiveResponse → WeatherSeries
+                Q->>C: putCachedWeather(params, series)
+            else HTTP 429 / erreur
+                API-->>Q: HTTP 429
+                Note over Q: WeatherApiError(status)<br/>retry avec backoff exponentiel
+            end
+        end
+        Q-->>V: WeatherSeries
+    end
+    V->>V: conversion d'unités, normales, rendu Recharts
+    V-->>U: graphiques affichés
+```
+
+Le choix d'un lieu est lui-même une étape préalable : `LocationSearch` interroge le
+**Geocoding API** (autocomplétion) ou, via la géolocalisation du navigateur, le
+**reverse-geocoding** BigDataCloud, pour obtenir les coordonnées `lat/lon` qui
+alimentent ensuite `WeatherParams`.
+
 ## Développement
 
 ```bash
@@ -49,12 +118,19 @@ npm run preview    # sert le build de production
 
 ## Déploiement
 
+**Déploiement continu** : chaque push sur `main` déclenche le workflow GitHub Actions
+[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml), qui build l'app et
+synchronise `dist/` vers le serveur (rsync over SSH, clé de déploiement dédiée stockée
+dans les secrets du dépôt).
+
+**Déploiement manuel** (secours) :
+
 ```bash
-./deploy/deploy.sh   # build + rsync vers le serveur
+./deploy/deploy.sh   # lit deploy/deploy.config.sh (ignoré par git), build + rsync
 ```
 
-La config nginx de production est dans [`deploy/nginx-archivesmeteo.conf`](deploy/nginx-archivesmeteo.conf).
-Le certificat TLS est géré par Certbot (renouvellement automatique).
+Le certificat TLS est géré par Certbot (renouvellement automatique). La config nginx de
+production est conservée hors du dépôt public.
 
 ## Documentation
 
