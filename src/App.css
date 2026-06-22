@@ -313,6 +313,22 @@ body {
 /* ============================================================
    Cards / charts
    ============================================================ */
+.compare-row { position: relative; margin-bottom: 1.25rem; max-width: 420px; }
+.compare-control { position: relative; }
+.compare-input {
+  width: 100%; font: inherit; font-size: 0.92rem; color: var(--text);
+  padding: 0.6rem 0.9rem; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-pill); box-shadow: var(--shadow-sm); backdrop-filter: blur(12px); outline: none;
+}
+.compare-input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+.compare-chip {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.45rem 0.5rem 0.45rem 0.9rem; font-size: 0.9rem;
+  background: var(--accent-soft); color: var(--accent); border-radius: var(--radius-pill);
+}
+.compare-chip strong { color: var(--text); }
+.compare-chip button { border: 0; background: var(--surface-solid); color: var(--text-dim); width: 1.5rem; height: 1.5rem; border-radius: 50%; cursor: pointer; font-size: 1rem; line-height: 1; }
+
 .charts-grid { display: grid; gap: 1.25rem; }
 .chart {
   padding: 1.25rem 1.25rem 1rem;

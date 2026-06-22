@@ -8,6 +8,9 @@ import { TemperatureChart } from '../components/TemperatureChart'
 import { PrecipitationChart } from '../components/PrecipitationChart'
 import { WindChart } from '../components/WindChart'
 import { AnomalyChart } from '../components/AnomalyChart'
+import { ComparisonChart } from '../components/ComparisonChart'
+import { CompareControl } from '../components/CompareControl'
+import { mergeMeanByDate } from '../lib/compare'
 import { validateRange, maxDate, toISODate } from '../lib/dates'
 import { convertDays, displayTemp, displayWind, displayTempDelta, tempUnitLabel, windUnitLabel } from '../lib/units'
 import { enrichWithNormals, meanAnomaly } from '../lib/climate'
@@ -44,6 +47,19 @@ export function ChartsView() {
       : null
 
   const { data, isFetching, isError } = useWeather(params)
+
+  const compareParams: WeatherParams | null =
+    location && state.compare && rangeValid
+      ? { latitude: state.compare.latitude, longitude: state.compare.longitude, startDate: start, endDate: end }
+      : null
+  const compareQuery = useWeather(compareParams)
+  const merged = useMemo(
+    () => (data && state.compare && compareQuery.data
+      ? mergeMeanByDate(convertDays(data.days, units), convertDays(compareQuery.data.days, units))
+      : null),
+    [data, compareQuery.data, state.compare, units],
+  )
+
   const normalsQuery = useNormals(location, showNormals && !!data)
   const normals = normalsQuery.data
 
@@ -115,6 +131,8 @@ export function ChartsView() {
         </div>
       </div>
 
+      <div className="compare-row"><CompareControl /></div>
+
       {normalsReady && anomalyAvg !== null && (
         <div className={`anomaly-banner ${anomalyAvg >= 0 ? 'anomaly-banner--warm' : 'anomaly-banner--cool'}`}>
           <strong>{anomalyAvg >= 0 ? '+' : ''}{anomalyAvg} {t}</strong>
@@ -135,6 +153,9 @@ export function ChartsView() {
       {isError && <p className="error error--banner">Impossible de récupérer les données. Vérifiez votre connexion et réessayez.</p>}
       {data && !isFetching && (
         <div className="charts-grid">
+          {merged && state.compare && (
+            <ComparisonChart data={merged} labelA={location.name} labelB={state.compare.name} unit={t} />
+          )}
           <TemperatureChart days={chartDays} unit={t} showNormal={!!normalsReady} />
           {normalsReady && <AnomalyChart days={chartDays} unit={t} />}
           <PrecipitationChart days={chartDays} />
