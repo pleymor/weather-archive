@@ -1,4 +1,5 @@
 import type { WeatherDay, WeatherSeries } from '../lib/types'
+import { toISODate } from '../lib/dates'
 
 export const WEATHER_DAILY_VARS = [
   'temperature_2m_max',
@@ -17,6 +18,21 @@ export interface WeatherParams {
 }
 
 const ARCHIVE_URL = 'https://archive-api.open-meteo.com/v1/archive'
+const FORECAST_URL = 'https://api.open-meteo.com/v1/forecast'
+
+/** The forecast API covers ~the last 90 days (separate rate-limit quota from the archive). */
+const FORECAST_WINDOW_DAYS = 90
+
+/**
+ * Picks the Open-Meteo endpoint for a range starting at `startISO`. Recent ranges go to
+ * the forecast API (separate quota, includes provisional current-day data); older ranges
+ * use the historical archive. Splitting across both endpoints avoids rate-limit exhaustion.
+ */
+export function weatherApiBase(startISO: string): string {
+  const cutoff = new Date()
+  cutoff.setUTCDate(cutoff.getUTCDate() - FORECAST_WINDOW_DAYS)
+  return startISO >= toISODate(cutoff) ? FORECAST_URL : ARCHIVE_URL
+}
 
 /** Error carrying the HTTP status, so callers (and react-query retry) can react to 429. */
 export class WeatherApiError extends Error {
@@ -35,7 +51,7 @@ export function buildWeatherUrl(p: WeatherParams): string {
     daily: WEATHER_DAILY_VARS.join(','),
     timezone: 'auto',
   })
-  return `${ARCHIVE_URL}?${q.toString()}`
+  return `${weatherApiBase(p.startDate)}?${q.toString()}`
 }
 
 function num(arr: unknown, i: number): number | null {

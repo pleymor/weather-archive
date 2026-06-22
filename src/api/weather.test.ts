@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
-import { buildWeatherUrl, normalizeArchiveResponse, fetchWeather } from './weather'
+import { buildWeatherUrl, normalizeArchiveResponse, fetchWeather, weatherApiBase } from './weather'
+import { toISODate } from '../lib/dates'
 
 const PARAMS = { latitude: 45.75, longitude: 4.85, startDate: '2020-01-01', endDate: '2020-01-02' }
 
@@ -28,6 +29,11 @@ describe('weather api', () => {
     expect(url).toContain('wind_speed_10m_max')
     expect(url).toContain('wind_gusts_10m_max')
     expect(url).toContain('timezone=auto')
+  })
+
+  it('routes recent ranges to the forecast API, old ranges to the archive', () => {
+    expect(weatherApiBase('2020-01-01')).toContain('archive-api.open-meteo.com')
+    expect(weatherApiBase(toISODate(new Date()))).toContain('api.open-meteo.com/v1/forecast')
   })
 
   it('normalizes raw response into WeatherSeries', () => {

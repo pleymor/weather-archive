@@ -1,4 +1,4 @@
-import { WeatherApiError } from './weather'
+import { WeatherApiError, weatherApiBase } from './weather'
 
 export const HOURLY_VARS = [
   'temperature_2m',
@@ -24,8 +24,6 @@ export interface HourlyPoint {
   wind: number | null
 }
 
-const ARCHIVE_URL = 'https://archive-api.open-meteo.com/v1/archive'
-
 export function buildHourlyUrl(p: HourlyParams): string {
   const q = new URLSearchParams({
     latitude: String(p.latitude),
@@ -35,7 +33,7 @@ export function buildHourlyUrl(p: HourlyParams): string {
     hourly: HOURLY_VARS.join(','),
     timezone: 'auto',
   })
-  return `${ARCHIVE_URL}?${q.toString()}`
+  return `${weatherApiBase(p.date)}?${q.toString()}`
 }
 
 function num(arr: unknown, i: number): number | null {
