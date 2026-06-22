@@ -450,6 +450,24 @@ body {
 /* ============================================================
    Footer
    ============================================================ */
+/* ============================================================
+   Map view
+   ============================================================ */
+.map-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+.map-info { font-size: 0.95rem; font-weight: 700; color: var(--text); }
+.map-wrap {
+  padding: 1rem; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow); backdrop-filter: blur(14px);
+}
+.map-svg { width: 100%; height: auto; display: block; max-height: 70vh; }
+.map-region {
+  stroke: var(--surface-solid); stroke-width: 0.8; cursor: pointer;
+  transition: opacity 0.12s, stroke-width 0.12s;
+}
+.map-region:hover, .map-region.is-hover { stroke: var(--text); stroke-width: 1.6; opacity: 0.9; }
+.map-legend { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.75rem; font-size: 0.8rem; font-weight: 600; color: var(--text-dim); }
+.map-legend__bar { flex: 1; height: 10px; border-radius: 5px; max-width: 320px; }
+
 .app-footer { margin-top: 2.5rem; text-align: center; font-size: 0.82rem; color: var(--text-faint); }
 .app-footer a { color: var(--accent); text-decoration: none; font-weight: 600; }
 .app-footer a:hover { text-decoration: underline; }

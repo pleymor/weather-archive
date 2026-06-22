@@ -3,6 +3,7 @@ import { HeaderControls } from './components/HeaderControls'
 import { ChartsView } from './views/ChartsView'
 import { DayView } from './views/DayView'
 import { YearsView } from './views/YearsView'
+import { MapView } from './views/MapView'
 import { useAppState } from './state/AppStateContext'
 import type { AppMode } from './lib/urlState'
 import './App.css'
@@ -11,11 +12,13 @@ const TABS: { mode: AppMode; label: string }[] = [
   { mode: 'charts', label: '📈 Graphiques' },
   { mode: 'day', label: '📅 Un jour donné' },
   { mode: 'years', label: '📜 Records & histoire' },
+  { mode: 'map', label: '🗺️ Carte' },
 ]
 
 function renderView(mode: AppMode) {
   if (mode === 'day') return <DayView />
   if (mode === 'years') return <YearsView />
+  if (mode === 'map') return <MapView />
   return <ChartsView />
 }
 
