@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { monthDay, thisDayAcrossYears, computeRecords, climateStats, linearFit } from './insights'
+import { monthDay, thisDayAcrossYears, computeRecords, climateStats, linearFit, annualExtremes } from './insights'
 import type { WeatherSeries, WeatherDay } from './types'
 
 function mk(date: string, max: number, min: number, mean: number, precip: number, wind: number): WeatherDay {
-  return { date, tempMax: max, tempMin: min, tempMean: mean, precipitation: precip, windMax: wind }
+  return { date, tempMax: max, tempMin: min, tempMean: mean, precipitation: precip, windGust: wind }
 }
 
 const SERIES: WeatherSeries = {
@@ -33,6 +33,14 @@ describe('insights', () => {
     expect(r.coldest).toEqual({ date: '2018-12-25', value: -6 })
     expect(r.wettest).toEqual({ date: '2020-07-14', value: 10 })
     expect(r.windiest).toEqual({ date: '2020-07-14', value: 55 })
+  })
+
+  it('computes per-year extremes', () => {
+    const a = annualExtremes(SERIES)
+    expect(a.map((y) => y.year)).toEqual([2018, 2019, 2020])
+    // 2018 has two days: hottest 28, coldest -6, strongest gust 40, wettest 5
+    expect(a[0]).toMatchObject({ year: 2018, hottest: 28, coldest: -6, windGust: 40, wettest: 5, windSpeedMax: null })
+    expect(a[2]).toMatchObject({ year: 2020, hottest: 35, windGust: 55, wettest: 10 })
   })
 
   it('fits a line by least squares', () => {

@@ -61,6 +61,6 @@ export function convertDays(days: WeatherDay[], units: Units): WeatherDay[] {
     tempMin: displayTemp(d.tempMin, units.temp),
     tempMean: displayTemp(d.tempMean, units.temp),
     precipitation: d.precipitation,
-    windMax: displayWind(d.windMax, units.wind),
+    windGust: displayWind(d.windGust, units.wind),
   }))
 }

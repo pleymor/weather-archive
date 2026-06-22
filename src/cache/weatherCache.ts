@@ -13,9 +13,10 @@ let dbPromise: Promise<IDBPDatabase<WeatherDB>> | null = null
 
 function db(): Promise<IDBPDatabase<WeatherDB>> {
   if (!dbPromise) {
-    // v2: wind switched from sustained speed to gusts — wipe the store so cached
-    // series are refetched with the new variable.
-    dbPromise = openDB<WeatherDB>(DB_NAME, 2, {
+    // v2: wind switched from sustained speed to gusts.
+    // v3: both sustained speed and gusts are now fetched — wipe again so cached
+    // series are refetched with the full set of wind variables.
+    dbPromise = openDB<WeatherDB>(DB_NAME, 3, {
       upgrade(database) {
         if (database.objectStoreNames.contains(STORE)) database.deleteObjectStore(STORE)
         database.createObjectStore(STORE)

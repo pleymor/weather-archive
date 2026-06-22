@@ -12,6 +12,7 @@ const RAW = {
     temperature_2m_min: [1.0, 2.0],
     temperature_2m_mean: [3.5, 4.6],
     precipitation_sum: [0.0, 1.2],
+    wind_speed_10m_max: [22.0, 30.0],
     wind_gusts_10m_max: [12.0, 18.5],
   },
 }
@@ -24,6 +25,7 @@ describe('weather api', () => {
     expect(url).toContain('start_date=2020-01-01')
     expect(url).toContain('temperature_2m_mean')
     expect(url).toContain('precipitation_sum')
+    expect(url).toContain('wind_speed_10m_max')
     expect(url).toContain('wind_gusts_10m_max')
     expect(url).toContain('timezone=auto')
   })
@@ -32,7 +34,7 @@ describe('weather api', () => {
     const series = normalizeArchiveResponse(RAW, PARAMS)
     expect(series.days).toHaveLength(2)
     expect(series.days[0]).toEqual({
-      date: '2020-01-01', tempMax: 6.1, tempMin: 1.0, tempMean: 3.5, precipitation: 0.0, windMax: 12.0,
+      date: '2020-01-01', tempMax: 6.1, tempMin: 1.0, tempMean: 3.5, precipitation: 0.0, windSpeedMax: 22.0, windGust: 12.0,
     })
     expect(series.startDate).toBe('2020-01-01')
   })

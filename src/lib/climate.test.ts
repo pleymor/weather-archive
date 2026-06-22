@@ -3,7 +3,7 @@ import { dayOfYear, computeNormals, enrichWithNormals, meanAnomaly } from './cli
 import type { WeatherSeries, WeatherDay } from './types'
 
 function day(date: string, mean: number): WeatherDay {
-  return { date, tempMax: mean + 5, tempMin: mean - 5, tempMean: mean, precipitation: 0, windMax: 10 }
+  return { date, tempMax: mean + 5, tempMin: mean - 5, tempMean: mean, precipitation: 0, windGust: 10 }
 }
 
 describe('climate', () => {

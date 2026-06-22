@@ -7,8 +7,8 @@ const SERIES: WeatherSeries = {
   startDate: '2020-01-01',
   endDate: '2020-01-02',
   days: [
-    { date: '2020-01-01', tempMax: 6, tempMin: 1, tempMean: 3.5, precipitation: 0, windMax: 12 },
-    { date: '2020-01-02', tempMax: 7, tempMin: null, tempMean: 4, precipitation: 1.2, windMax: 18 },
+    { date: '2020-01-01', tempMax: 6, tempMin: 1, tempMean: 3.5, precipitation: 0, windGust: 12 },
+    { date: '2020-01-02', tempMax: 7, tempMin: null, tempMean: 4, precipitation: 1.2, windGust: 18 },
   ],
 }
 

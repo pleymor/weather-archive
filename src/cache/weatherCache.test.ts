@@ -8,7 +8,7 @@ const SERIES: WeatherSeries = {
   location: { latitude: 45.7512, longitude: 4.8501 },
   startDate: '2020-01-01',
   endDate: '2020-01-02',
-  days: [{ date: '2020-01-01', tempMax: 6, tempMin: 1, tempMean: 3, precipitation: 0, windMax: 12 }],
+  days: [{ date: '2020-01-01', tempMax: 6, tempMin: 1, tempMean: 3, precipitation: 0, windGust: 12 }],
 }
 
 describe('weatherCache', () => {

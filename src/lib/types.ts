@@ -13,7 +13,9 @@ export interface WeatherDay {
   tempMin: number | null
   tempMean: number | null
   precipitation: number | null
-  windMax: number | null
+  /** Daily max sustained wind speed. Optional: absent on older cached/test data. */
+  windSpeedMax?: number | null
+  windGust: number | null
 }
 
 export interface WeatherSeries {

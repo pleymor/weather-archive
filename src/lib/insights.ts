@@ -11,6 +11,8 @@ export interface YearValue {
   tempMax: number | null
   tempMin: number | null
   precipitation: number | null
+  windSpeedMax: number | null
+  windGust: number | null
 }
 
 /** Returns the same calendar day (MM-DD) for every year present in the series. */
@@ -23,6 +25,8 @@ export function thisDayAcrossYears(series: WeatherSeries, md: string): YearValue
       tempMax: d.tempMax,
       tempMin: d.tempMin,
       precipitation: d.precipitation,
+      windSpeedMax: d.windSpeedMax ?? null,
+      windGust: d.windGust,
     }))
 }
 
@@ -44,9 +48,37 @@ export function computeRecords(series: WeatherSeries): Records {
     if (d.tempMax !== null && (hottest === null || d.tempMax > hottest.value)) hottest = { date: d.date, value: d.tempMax }
     if (d.tempMin !== null && (coldest === null || d.tempMin < coldest.value)) coldest = { date: d.date, value: d.tempMin }
     if (d.precipitation !== null && (wettest === null || d.precipitation > wettest.value)) wettest = { date: d.date, value: d.precipitation }
-    if (d.windMax !== null && (windiest === null || d.windMax > windiest.value)) windiest = { date: d.date, value: d.windMax }
+    if (d.windGust !== null && (windiest === null || d.windGust > windiest.value)) windiest = { date: d.date, value: d.windGust }
   }
   return { hottest, coldest, wettest, windiest }
+}
+
+export interface YearExtreme {
+  year: number
+  hottest: number | null // max of daily tempMax
+  coldest: number | null // min of daily tempMin
+  windSpeedMax: number | null // max sustained wind speed
+  windGust: number | null // max gust
+  wettest: number | null // max daily precipitation
+}
+
+/** Per-year extremes over the whole series, sorted by year ascending. */
+export function annualExtremes(series: WeatherSeries): YearExtreme[] {
+  const byYear = new Map<number, YearExtreme>()
+  for (const d of series.days) {
+    const year = Number(d.date.slice(0, 4))
+    let e = byYear.get(year)
+    if (!e) {
+      e = { year, hottest: null, coldest: null, windSpeedMax: null, windGust: null, wettest: null }
+      byYear.set(year, e)
+    }
+    if (d.tempMax !== null && (e.hottest === null || d.tempMax > e.hottest)) e.hottest = d.tempMax
+    if (d.tempMin !== null && (e.coldest === null || d.tempMin < e.coldest)) e.coldest = d.tempMin
+    if (d.windSpeedMax != null && (e.windSpeedMax === null || d.windSpeedMax > e.windSpeedMax)) e.windSpeedMax = d.windSpeedMax
+    if (d.windGust !== null && (e.windGust === null || d.windGust > e.windGust)) e.windGust = d.windGust
+    if (d.precipitation !== null && (e.wettest === null || d.precipitation > e.wettest)) e.wettest = d.precipitation
+  }
+  return [...byYear.values()].sort((a, b) => a.year - b.year)
 }
 
 /** Ordinary least-squares fit; returns null if fewer than 2 points. */

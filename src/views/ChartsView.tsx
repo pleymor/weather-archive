@@ -77,7 +77,7 @@ export function ChartsView() {
         tempMin: displayTemp(d.tempMin, units.temp),
         tempMean: displayTemp(d.tempMean, units.temp),
         precipitation: d.precipitation,
-        windMax: displayWind(d.windMax, units.wind),
+        windGust: displayWind(d.windGust, units.wind),
         normalMean: displayTemp(d.normalMean, units.temp),
         anomaly: displayTempDelta(d.anomaly, units.temp),
       }))

@@ -39,7 +39,7 @@ describe('ChartsView', () => {
   it('renders charts when data is available', async () => {
     vi.mocked(useWeather).mockReturnValue({
       data: { location: { latitude: 45.75, longitude: 4.85 }, startDate: '2020-01-01', endDate: '2020-01-02',
-        days: [{ date: '2020-01-01', tempMax: 6, tempMin: 1, tempMean: 3, precipitation: 0, windMax: 12 }] },
+        days: [{ date: '2020-01-01', tempMax: 6, tempMin: 1, tempMean: 3, precipitation: 0, windGust: 12 }] },
       isFetching: false, isError: false,
     } as never)
     render(<><SetLocation loc={{ name: 'Lyon', latitude: 45.75, longitude: 4.85 }} /><ChartsView /></>, { wrapper })

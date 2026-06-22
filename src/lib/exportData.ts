@@ -12,7 +12,7 @@ export function toCSV(series: WeatherSeries, units: Units): string {
     fmt(displayTemp(d.tempMin, units.temp)),
     fmt(displayTemp(d.tempMean, units.temp)),
     fmt(d.precipitation),
-    fmt(displayWind(d.windMax, units.wind)),
+    fmt(displayWind(d.windGust, units.wind)),
   ])
   return [header, ...rows].map((r) => r.join(';')).join('\n')
 }

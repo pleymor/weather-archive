@@ -23,7 +23,7 @@ export function ThisDayChart({
           <XAxis {...axisProps} dataKey="year" minTickGap={24} />
           <YAxis {...axisProps} width={44} />
           <Tooltip content={(p) => <ChartTooltip {...p} unit={unit} formatLabel={(y) => `Année ${y}`} />} cursor={{ fill: 'var(--chart-grid)', opacity: 0.4 }} />
-          <Bar dataKey="value" name="Température" radius={[3, 3, 0, 0]}>
+          <Bar dataKey="value" name={title} radius={[3, 3, 0, 0]}>
             {data.map((d) => (
               <Cell key={d.year} fill={(d.value ?? mid) >= mid ? WARM : COOL} />
             ))}

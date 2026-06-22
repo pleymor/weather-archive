@@ -3,7 +3,7 @@ import { mergeMeanByDate, average } from './compare'
 import type { WeatherDay } from './types'
 
 function d(date: string, mean: number | null): WeatherDay {
-  return { date, tempMax: null, tempMin: null, tempMean: mean, precipitation: null, windMax: null }
+  return { date, tempMax: null, tempMin: null, tempMean: mean, precipitation: null, windGust: null }
 }
 
 describe('compare', () => {

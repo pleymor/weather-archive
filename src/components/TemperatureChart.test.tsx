@@ -4,8 +4,8 @@ import { TemperatureChart } from './TemperatureChart'
 import type { WeatherDay } from '../lib/types'
 
 const DAYS: WeatherDay[] = [
-  { date: '2020-01-01', tempMax: 6, tempMin: 1, tempMean: 3, precipitation: 0, windMax: 12 },
-  { date: '2020-01-02', tempMax: 7, tempMin: 2, tempMean: 4, precipitation: 1, windMax: 18 },
+  { date: '2020-01-01', tempMax: 6, tempMin: 1, tempMean: 3, precipitation: 0, windGust: 12 },
+  { date: '2020-01-02', tempMax: 7, tempMin: 2, tempMean: 4, precipitation: 1, windGust: 18 },
 ]
 
 describe('TemperatureChart', () => {
