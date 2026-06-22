@@ -3,21 +3,14 @@ import { useQuery } from '@tanstack/react-query'
 import { useAppState } from '../state/AppStateContext'
 import { useSettings } from '../state/SettingsContext'
 import { useChoropleth } from '../hooks/useChoropleth'
-import { DateRangePicker } from '../components/DateRangePicker'
-import { validateRange, maxDate, toISODate } from '../lib/dates'
+import { DatePicker } from '../components/DatePicker'
+import { validateSingleDate, maxDate, formatLongDate } from '../lib/dates'
 import { displayTemp, tempUnitLabel } from '../lib/units'
 import { featureBounds, makeProjection, pathFor, centroid, pointInFeature, type GeoFeature, type GeoCollection } from '../lib/geo'
 import { colorFor, rampColor } from '../lib/colorScale'
 
 const W = 640
 const H = 640
-
-function last30(): { start: string; end: string } {
-  const end = maxDate()
-  const s = new Date(`${end}T00:00:00Z`)
-  s.setUTCDate(s.getUTCDate() - 29)
-  return { start: toISODate(s), end }
-}
 
 async function fetchGeo(url: string): Promise<GeoFeature[]> {
   const res = await fetch(url)
@@ -27,14 +20,13 @@ async function fetchGeo(url: string): Promise<GeoFeature[]> {
 }
 
 export function MapView() {
-  const { state, setLocation, setMode, setRange } = useAppState()
+  const { state, setLocation, setMode, setDate } = useAppState()
   const { units } = useSettings()
   const [region, setRegion] = useState<GeoFeature | null>(null)
   const [hover, setHover] = useState<string | null>(null)
 
-  const eff = state.start && state.end && validateRange(state.start, state.end).ok
-    ? { start: state.start, end: state.end }
-    : last30()
+  // A single day (defaults to today; Open-Meteo serves provisional current-day values).
+  const day = state.date && validateSingleDate(state.date).ok ? state.date : maxDate()
 
   const regionsQuery = useQuery({ queryKey: ['geo', 'regions'], staleTime: Infinity, gcTime: Infinity, queryFn: () => fetchGeo('/geo/regions.geojson') })
   const deptsQuery = useQuery({ queryKey: ['geo', 'departements'], enabled: region !== null, staleTime: Infinity, gcTime: Infinity, queryFn: () => fetchGeo('/geo/departements.geojson') })
@@ -44,7 +36,7 @@ export function MapView() {
     return regionsQuery.data ?? []
   }, [region, deptsQuery.data, regionsQuery.data])
 
-  const choropleth = useChoropleth(displayed, eff.start, eff.end)
+  const choropleth = useChoropleth(displayed, day)
   const values = choropleth.data
 
   const [vmin, vmax] = useMemo(() => {
@@ -68,8 +60,8 @@ export function MapView() {
   return (
     <section className="map-view">
       <div className="toolbar">
-        <DateRangePicker start={state.start} end={state.end} onChange={setRange} />
-        <p className="years-view__hint">Carte de la température moyenne sur la période ({eff.start} → {eff.end}).</p>
+        <DatePicker value={day} onChange={setDate} />
+        <p className="years-view__hint">Carte de la température maximale du {formatLongDate(day)}.</p>
       </div>
 
       <div className="map-head">
