@@ -2,6 +2,10 @@ import { useQuery, type UseQueryResult } from '@tanstack/react-query'
 import { loadWeather } from '../api/loadWeather'
 import { average } from '../lib/compare'
 import { centroid, type GeoFeature } from '../lib/geo'
+import { mapWithConcurrency } from '../lib/async'
+
+/** Max simultaneous archive requests, to stay under Open-Meteo's rate limit. */
+const MAP_CONCURRENCY = 4
 
 /** Average mean-temperature (°C) per feature code over [start,end], computed at each centroid. */
 export function useChoropleth(
@@ -16,13 +20,11 @@ export function useChoropleth(
     staleTime: Infinity,
     gcTime: Infinity,
     queryFn: async () => {
-      const entries = await Promise.all(
-        features.map(async (f) => {
-          const [lon, lat] = centroid(f)
-          const series = await loadWeather({ latitude: lat, longitude: lon, startDate: start, endDate: end })
-          return [f.properties.code, average(series.days.map((d) => d.tempMean))] as const
-        }),
-      )
+      const entries = await mapWithConcurrency(features, MAP_CONCURRENCY, async (f) => {
+        const [lon, lat] = centroid(f)
+        const series = await loadWeather({ latitude: lat, longitude: lon, startDate: start, endDate: end })
+        return [f.properties.code, average(series.days.map((d) => d.tempMean))] as const
+      })
       return new Map(entries)
     },
   })

@@ -291,16 +291,19 @@ body {
 .field-row__arrow { color: var(--text-faint); padding-bottom: 0.6rem; }
 .field { display: flex; flex-direction: column; gap: 0.35rem; }
 .field__label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); }
-.field input[type='date'] {
+.field input[type='date'],
+.field select {
   font: inherit; color: var(--text);
   padding: 0.55rem 0.75rem;
   background: var(--surface-solid);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   outline: none;
+  cursor: pointer;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
-.field input[type='date']:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+.field input[type='date']:focus,
+.field select:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
 
 .presets { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .chip {
@@ -475,6 +478,8 @@ body {
 @media (min-width: 760px) {
   .charts-grid { grid-template-columns: 1fr 1fr; }
   .charts-grid .chart:first-child { grid-column: 1 / -1; }
+  /* Max/min "this day" charts: stacked full-width, each spanning the row. */
+  .charts-grid--pair { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {

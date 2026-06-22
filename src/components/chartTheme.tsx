@@ -46,13 +46,16 @@ export function ChartTooltip(props: {
   payload?: readonly unknown[]
   label?: unknown
   unit: string
+  /** How to render the header label. Defaults to a full French date; charts with a
+   *  non-date X axis (e.g. year) should pass their own formatter. */
+  formatLabel?: (label: string) => string
 }): ReactNode {
-  const { active, label, unit } = props
+  const { active, label, unit, formatLabel = formatLongDate } = props
   const payload = (props.payload ?? []) as TooltipEntry[]
   if (!active || payload.length === 0) return null
   return (
     <div className="chart-tooltip">
-      <p className="chart-tooltip__date">{label != null ? formatLongDate(String(label)) : ''}</p>
+      <p className="chart-tooltip__date">{label != null ? formatLabel(String(label)) : ''}</p>
       {payload.map((entry) => (
         <p key={entry.dataKey} className="chart-tooltip__row">
           <span className="chart-tooltip__dot" style={{ background: entry.color }} />

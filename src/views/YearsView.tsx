@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useAppState } from '../state/AppStateContext'
 import { useSettings } from '../state/SettingsContext'
 import { useFullHistory } from '../hooks/useFullHistory'
-import { DatePicker } from '../components/DatePicker'
+import { MonthDayPicker } from '../components/MonthDayPicker'
 import { ThisDayChart, type ThisDayDatum } from '../components/ThisDayChart'
 import { monthDay, thisDayAcrossYears, computeRecords, climateStats, linearFit } from '../lib/insights'
 import { displayTemp, displayWind, tempUnitLabel, windUnitLabel } from '../lib/units'
@@ -19,22 +19,25 @@ export function YearsView() {
 
   const yearValues = useMemo(() => (series ? thisDayAcrossYears(series, md) : []), [series, md])
 
-  const thisDay = useMemo<ThisDayDatum[]>(() => {
-    const pts = yearValues
-      .filter((y) => y.tempMean !== null)
-      .map((y) => [y.year, y.tempMean as number] as [number, number])
-    const fit = linearFit(pts)
-    return yearValues.map((y) => ({
-      year: y.year,
-      value: displayTemp(y.tempMean, units.temp),
-      trend: fit ? displayTemp(fit.slope * y.year + fit.intercept, units.temp) : null,
-    }))
+  const { maxData, minData } = useMemo(() => {
+    const build = (pick: (y: (typeof yearValues)[number]) => number | null): ThisDayDatum[] => {
+      const pts = yearValues
+        .filter((y) => pick(y) !== null)
+        .map((y) => [y.year, pick(y) as number] as [number, number])
+      const fit = linearFit(pts)
+      return yearValues.map((y) => ({
+        year: y.year,
+        value: displayTemp(pick(y), units.temp),
+        trend: fit ? displayTemp(fit.slope * y.year + fit.intercept, units.temp) : null,
+      }))
+    }
+    return { maxData: build((y) => y.tempMax), minData: build((y) => y.tempMin) }
   }, [yearValues, units.temp])
 
-  const mid = useMemo(() => {
-    const vals = thisDay.map((d) => d.value).filter((v): v is number => v !== null)
+  const midOf = (data: ThisDayDatum[]): number => {
+    const vals = data.map((d) => d.value).filter((v): v is number => v !== null)
     return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0
-  }, [thisDay])
+  }
 
   const records = useMemo(() => (series ? computeRecords(series) : null), [series])
   const stats = useMemo(() => (series ? climateStats(series) : null), [series])
@@ -55,8 +58,7 @@ export function YearsView() {
   return (
     <section className="years-view">
       <div className="toolbar">
-        <DatePicker value={date} onChange={setDate} />
-        <p className="years-view__hint">Le jour (mois + jour) sert pour « ce jour-là » ; l'année est ignorée.</p>
+        <MonthDayPicker value={date} onChange={setDate} />
       </div>
 
       {history.isLoading && (
@@ -70,8 +72,9 @@ export function YearsView() {
       {series && (
         <>
           <h2 className="day-view__title">Le {formatShortDate(`2000-${md}`)} à travers les années</h2>
-          <div className="charts-grid">
-            <ThisDayChart data={thisDay} unit={t} mid={mid} />
+          <div className="charts-grid charts-grid--pair">
+            <ThisDayChart data={maxData} unit={t} mid={midOf(maxData)} title="Température maximale" icon="🔥" accent="#f97316" />
+            <ThisDayChart data={minData} unit={t} mid={midOf(minData)} title="Température minimale" icon="❄️" accent="#0ea5e9" />
           </div>
 
           {records && (

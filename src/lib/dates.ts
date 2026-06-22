@@ -6,6 +6,17 @@ export function toISODate(d: Date): string {
 
 const MONTHS_FR = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.']
 
+/** Full French month names, index 0 = January. */
+export const MONTH_NAMES_FR = [
+  'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+  'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre',
+]
+
+/** Number of days in a 1-based month, using a leap year so February allows 29. */
+export function daysInMonth(month: number): number {
+  return new Date(Date.UTC(2000, month, 0)).getUTCDate()
+}
+
 /** Formats an ISO date (YYYY-MM-DD) to a short French label, e.g. "5 janv." */
 export function formatShortDate(iso: string): string {
   const [, m, d] = iso.split('-')
@@ -17,6 +28,7 @@ export function formatShortDate(iso: string): string {
 export function formatLongDate(iso: string): string {
   const [y, m, d] = iso.split('-').map(Number)
   const date = new Date(Date.UTC(y, m - 1, d))
+  if (Number.isNaN(date.getTime())) return iso // not an ISO date — show as-is
   return new Intl.DateTimeFormat('fr-FR', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
   }).format(date)

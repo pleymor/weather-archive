@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { MIN_DATE, maxDate, toISODate, validateRange, validateSingleDate } from './dates'
+import { MIN_DATE, maxDate, toISODate, validateRange, validateSingleDate, formatLongDate } from './dates'
 
 const TODAY = new Date('2026-06-21T12:00:00Z')
 
@@ -29,5 +29,14 @@ describe('dates', () => {
   it('rejects future dates', () => {
     expect(validateSingleDate('2026-06-21', TODAY).ok).toBe(false)
     expect(validateSingleDate('2026-06-20', TODAY)).toEqual({ ok: true })
+  })
+
+  it('formatLongDate renders a full French date', () => {
+    expect(formatLongDate('2020-01-05')).toBe('dimanche 5 janvier 2020')
+  })
+
+  it('formatLongDate returns non-date input as-is instead of throwing', () => {
+    expect(formatLongDate('2020')).toBe('2020')
+    expect(() => formatLongDate('2020')).not.toThrow()
   })
 })

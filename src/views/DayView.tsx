@@ -1,8 +1,9 @@
+import { useEffect } from 'react'
 import { useAppState } from '../state/AppStateContext'
 import { useSettings } from '../state/SettingsContext'
 import { useWeather } from '../hooks/useWeather'
 import { DatePicker } from '../components/DatePicker'
-import { validateSingleDate, formatLongDate } from '../lib/dates'
+import { validateSingleDate, formatLongDate, maxDate } from '../lib/dates'
 import { displayTemp, displayWind, tempUnitLabel, windUnitLabel } from '../lib/units'
 import type { WeatherParams } from '../api/weather'
 
@@ -16,6 +17,11 @@ export function DayView() {
   const { state, setDate } = useAppState()
   const { units } = useSettings()
   const { location, date } = state
+
+  // Default to the most recent available day (yesterday — today isn't in the archive yet).
+  useEffect(() => {
+    if (!date) setDate(maxDate())
+  }, [date, setDate])
 
   const dateValid = Boolean(date) && validateSingleDate(date).ok
   const params: WeatherParams | null =

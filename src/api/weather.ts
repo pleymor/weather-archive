@@ -17,6 +17,14 @@ export interface WeatherParams {
 
 const ARCHIVE_URL = 'https://archive-api.open-meteo.com/v1/archive'
 
+/** Error carrying the HTTP status, so callers (and react-query retry) can react to 429. */
+export class WeatherApiError extends Error {
+  constructor(public readonly status: number) {
+    super(`Erreur API météo (${status})`)
+    this.name = 'WeatherApiError'
+  }
+}
+
 export function buildWeatherUrl(p: WeatherParams): string {
   const q = new URLSearchParams({
     latitude: String(p.latitude),
@@ -59,7 +67,7 @@ export async function fetchWeather(
   fetchFn: typeof fetch = fetch,
 ): Promise<WeatherSeries> {
   const res = await fetchFn(buildWeatherUrl(p))
-  if (!res.ok) throw new Error(`Erreur API météo (${res.status})`)
+  if (!res.ok) throw new WeatherApiError(res.status)
   const raw = await res.json()
   return normalizeArchiveResponse(raw, p)
 }
