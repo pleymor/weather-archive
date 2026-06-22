@@ -1,21 +1,13 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from 'react'
 import type { Location } from '../lib/types'
+import { AppStateProvider, useAppState } from './AppStateContext'
 
-interface LocationContextValue {
-  location: Location | null
-  setLocation: (l: Location | null) => void
-}
+/**
+ * Backwards-compatible location API layered over the unified app state.
+ * `LocationProvider` is an alias for `AppStateProvider` (no URL sync by default).
+ */
+export const LocationProvider = AppStateProvider
 
-const Ctx = createContext<LocationContextValue | null>(null)
-
-export function LocationProvider({ children }: { children: ReactNode }) {
-  const [location, setLocation] = useState<Location | null>(null)
-  const value = useMemo(() => ({ location, setLocation }), [location])
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>
-}
-
-export function useLocation(): LocationContextValue {
-  const ctx = useContext(Ctx)
-  if (!ctx) throw new Error('useLocation must be used within LocationProvider')
-  return ctx
+export function useLocation(): { location: Location | null; setLocation: (l: Location | null) => void } {
+  const { state, setLocation } = useAppState()
+  return { location: state.location, setLocation }
 }

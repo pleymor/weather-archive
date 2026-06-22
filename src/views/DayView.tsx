@@ -1,8 +1,9 @@
-import { useState } from 'react'
-import { useLocation } from '../state/LocationContext'
+import { useAppState } from '../state/AppStateContext'
+import { useSettings } from '../state/SettingsContext'
 import { useWeather } from '../hooks/useWeather'
 import { DatePicker } from '../components/DatePicker'
 import { validateSingleDate, formatLongDate } from '../lib/dates'
+import { displayTemp, displayWind, tempUnitLabel, windUnitLabel } from '../lib/units'
 import type { WeatherParams } from '../api/weather'
 
 function fmt(value: number | null, unit: string): string {
@@ -12,8 +13,9 @@ function fmt(value: number | null, unit: string): string {
 interface Stat { icon: string; label: string; value: string; tint: string }
 
 export function DayView() {
-  const { location } = useLocation()
-  const [date, setDate] = useState('')
+  const { state, setDate } = useAppState()
+  const { units } = useSettings()
+  const { location, date } = state
 
   const dateValid = Boolean(date) && validateSingleDate(date).ok
   const params: WeatherParams | null =
@@ -34,13 +36,15 @@ export function DayView() {
     )
   }
 
+  const t = tempUnitLabel(units.temp)
+  const w = windUnitLabel(units.wind)
   const stats: Stat[] = day
     ? [
-        { icon: '🔥', label: 'Température max', value: fmt(day.tempMax, '°C'), tint: 'orange' },
-        { icon: '❄️', label: 'Température min', value: fmt(day.tempMin, '°C'), tint: 'sky' },
-        { icon: '🌡️', label: 'Température moyenne', value: fmt(day.tempMean, '°C'), tint: 'indigo' },
+        { icon: '🔥', label: 'Température max', value: fmt(displayTemp(day.tempMax, units.temp), t), tint: 'orange' },
+        { icon: '❄️', label: 'Température min', value: fmt(displayTemp(day.tempMin, units.temp), t), tint: 'sky' },
+        { icon: '🌡️', label: 'Température moyenne', value: fmt(displayTemp(day.tempMean, units.temp), t), tint: 'indigo' },
         { icon: '🌧️', label: 'Précipitations', value: fmt(day.precipitation, 'mm'), tint: 'cyan' },
-        { icon: '💨', label: 'Vent max', value: fmt(day.windMax, 'km/h'), tint: 'teal' },
+        { icon: '💨', label: 'Vent max', value: fmt(displayWind(day.windMax, units.wind), w), tint: 'teal' },
       ]
     : []
 
@@ -57,9 +61,7 @@ export function DayView() {
         </div>
       )}
       {isFetching && (
-        <div className="stat-grid">
-          {[0, 1, 2, 3, 4].map((i) => <div key={i} className="stat stat--skeleton" />)}
-        </div>
+        <div className="stat-grid">{[0, 1, 2, 3, 4].map((i) => <div key={i} className="stat stat--skeleton" />)}</div>
       )}
       {isError && <p className="error error--banner">Impossible de récupérer les données. Vérifiez votre connexion et réessayez.</p>}
       {day && !isFetching && (

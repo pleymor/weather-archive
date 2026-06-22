@@ -6,6 +6,7 @@ vi.mock('../hooks/useWeather', () => ({ useWeather: vi.fn() }))
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { LocationProvider, useLocation } from '../state/LocationContext'
+import { SettingsProvider } from '../state/SettingsContext'
 import { DayView } from './DayView'
 import { useWeather } from '../hooks/useWeather'
 import type { Location } from '../lib/types'
@@ -19,7 +20,9 @@ function wrapper({ children }: { children: ReactNode }) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return (
     <QueryClientProvider client={client}>
-      <LocationProvider>{children}</LocationProvider>
+      <SettingsProvider>
+        <LocationProvider>{children}</LocationProvider>
+      </SettingsProvider>
     </QueryClientProvider>
   )
 }

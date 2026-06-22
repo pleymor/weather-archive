@@ -1,15 +1,17 @@
-import { useState } from 'react'
-import { useLocation } from '../state/LocationContext'
+import { useMemo } from 'react'
+import { useAppState } from '../state/AppStateContext'
+import { useSettings } from '../state/SettingsContext'
 import { useWeather } from '../hooks/useWeather'
 import { DateRangePicker } from '../components/DateRangePicker'
 import { TemperatureChart } from '../components/TemperatureChart'
 import { PrecipitationChart } from '../components/PrecipitationChart'
 import { WindChart } from '../components/WindChart'
 import { validateRange, maxDate, toISODate } from '../lib/dates'
+import { convertDays, tempUnitLabel, windUnitLabel } from '../lib/units'
+import { toCSV, downloadText } from '../lib/exportData'
 import type { WeatherParams } from '../api/weather'
 
-interface Preset { label: string; days: number }
-const PRESETS: Preset[] = [
+const PRESETS = [
   { label: '7 jours', days: 7 },
   { label: '30 jours', days: 30 },
   { label: '90 jours', days: 90 },
@@ -24,9 +26,9 @@ function rangeForDays(days: number): { start: string; end: string } {
 }
 
 export function ChartsView() {
-  const { location } = useLocation()
-  const [start, setStart] = useState('')
-  const [end, setEnd] = useState('')
+  const { state, setRange } = useAppState()
+  const { units } = useSettings()
+  const { location, start, end } = state
 
   const rangeValid = Boolean(start && end) && validateRange(start, end).ok
   const params: WeatherParams | null =
@@ -35,6 +37,7 @@ export function ChartsView() {
       : null
 
   const { data, isFetching, isError } = useWeather(params)
+  const displayDays = useMemo(() => (data ? convertDays(data.days, units) : []), [data, units])
 
   if (!location) {
     return (
@@ -46,22 +49,30 @@ export function ChartsView() {
     )
   }
 
-  function applyPreset(days: number) {
-    const r = rangeForDays(days)
-    setStart(r.start)
-    setEnd(r.end)
+  function exportCsv() {
+    if (!data) return
+    downloadText(`meteo_${location!.name}_${start}_${end}.csv`, toCSV(data, units))
   }
 
   return (
     <section className="charts-view">
       <div className="toolbar">
-        <DateRangePicker start={start} end={end} onChange={(s, e) => { setStart(s); setEnd(e) }} />
-        <div className="presets">
-          {PRESETS.map((p) => (
-            <button key={p.days} type="button" className="chip" onClick={() => applyPreset(p.days)}>
-              {p.label}
-            </button>
-          ))}
+        <DateRangePicker start={start} end={end} onChange={setRange} />
+        <div className="toolbar__actions">
+          <div className="presets">
+            {PRESETS.map((p) => {
+              const r = rangeForDays(p.days)
+              const active = start === r.start && end === r.end
+              return (
+                <button key={p.days} type="button" className={`chip${active ? ' is-active' : ''}`} onClick={() => setRange(r.start, r.end)}>
+                  {p.label}
+                </button>
+              )
+            })}
+          </div>
+          {data && (
+            <button type="button" className="chip chip--action" onClick={exportCsv}>⬇ CSV</button>
+          )}
         </div>
       </div>
 
@@ -72,16 +83,14 @@ export function ChartsView() {
         </div>
       )}
       {isFetching && (
-        <div className="charts-grid">
-          {[0, 1, 2].map((i) => <div key={i} className="chart chart--skeleton" />)}
-        </div>
+        <div className="charts-grid">{[0, 1, 2].map((i) => <div key={i} className="chart chart--skeleton" />)}</div>
       )}
       {isError && <p className="error error--banner">Impossible de récupérer les données. Vérifiez votre connexion et réessayez.</p>}
       {data && !isFetching && (
         <div className="charts-grid">
-          <TemperatureChart days={data.days} />
-          <PrecipitationChart days={data.days} />
-          <WindChart days={data.days} />
+          <TemperatureChart days={displayDays} unit={tempUnitLabel(units.temp)} />
+          <PrecipitationChart days={displayDays} />
+          <WindChart days={displayDays} unit={windUnitLabel(units.wind)} />
         </div>
       )}
     </section>

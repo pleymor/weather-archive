@@ -2,14 +2,14 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContai
 import type { WeatherDay } from '../lib/types'
 import { CHART_COLORS, xAxisProps, axisProps, gridProps, ChartTooltip } from './chartTheme'
 
-export function WindChart({ days }: { days: WeatherDay[] }) {
+export function WindChart({ days, unit = 'km/h' }: { days: WeatherDay[]; unit?: string }) {
   if (days.length === 0) return <p className="chart-empty">Aucune donnée à afficher.</p>
   return (
     <div data-testid="wind-chart" data-points={days.length} className="chart">
       <div className="chart__head">
         <span className="chart__icon" style={{ background: 'rgba(20,184,166,.14)', color: CHART_COLORS.wind }}>💨</span>
         <h3>Vent max</h3>
-        <span className="chart__unit">km/h</span>
+        <span className="chart__unit">{unit}</span>
       </div>
       <ResponsiveContainer width="100%" height={280}>
         <AreaChart data={days} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
@@ -22,7 +22,7 @@ export function WindChart({ days }: { days: WeatherDay[] }) {
           <CartesianGrid {...gridProps} />
           <XAxis {...xAxisProps} />
           <YAxis {...axisProps} width={44} />
-          <Tooltip content={(p) => <ChartTooltip {...p} unit="km/h" />} cursor={{ stroke: 'var(--chart-grid)' }} />
+          <Tooltip content={(p) => <ChartTooltip {...p} unit={unit} />} cursor={{ stroke: 'var(--chart-grid)' }} />
           <Area type="monotone" dataKey="windMax" name="Vent max" stroke={CHART_COLORS.wind} strokeWidth={2.5} fill="url(#gradWind)" dot={false} activeDot={{ r: 4 }} />
         </AreaChart>
       </ResponsiveContainer>
