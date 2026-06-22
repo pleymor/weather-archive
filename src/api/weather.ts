@@ -17,21 +17,22 @@ export interface WeatherParams {
   endDate: string
 }
 
-const ARCHIVE_URL = 'https://archive-api.open-meteo.com/v1/archive'
-const FORECAST_URL = 'https://api.open-meteo.com/v1/forecast'
+// Same-origin proxy paths (nginx caches these → scalable, no per-client rate limit).
+// In dev, Vite proxies them to Open-Meteo (see vite.config.ts).
+const ARCHIVE_PATH = '/api/archive'
+const FORECAST_PATH = '/api/forecast'
 
-/** The forecast API covers ~the last 90 days (separate rate-limit quota from the archive). */
+/** The forecast endpoint covers ~the last 90 days (separate upstream quota from the archive). */
 const FORECAST_WINDOW_DAYS = 90
 
 /**
- * Picks the Open-Meteo endpoint for a range starting at `startISO`. Recent ranges go to
- * the forecast API (separate quota, includes provisional current-day data); older ranges
- * use the historical archive. Splitting across both endpoints avoids rate-limit exhaustion.
+ * Picks the endpoint for a range starting at `startISO`. Recent ranges go to the forecast
+ * endpoint (includes provisional current-day data); older ranges use the historical archive.
  */
 export function weatherApiBase(startISO: string): string {
   const cutoff = new Date()
   cutoff.setUTCDate(cutoff.getUTCDate() - FORECAST_WINDOW_DAYS)
-  return startISO >= toISODate(cutoff) ? FORECAST_URL : ARCHIVE_URL
+  return startISO >= toISODate(cutoff) ? FORECAST_PATH : ARCHIVE_PATH
 }
 
 /** Error carrying the HTTP status, so callers (and react-query retry) can react to 429. */

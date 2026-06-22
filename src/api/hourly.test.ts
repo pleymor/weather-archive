@@ -17,7 +17,7 @@ const RAW = {
 describe('hourly api', () => {
   it('builds a single-day archive url with hourly vars', () => {
     const url = buildHourlyUrl(PARAMS)
-    expect(url).toContain('archive-api.open-meteo.com/v1/archive')
+    expect(url).toContain('/api/archive')
     expect(url).toContain('start_date=2020-01-15')
     expect(url).toContain('end_date=2020-01-15')
     expect(url).toContain('weather_code')

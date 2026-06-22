@@ -4,6 +4,21 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  // Dev only: mimic the production nginx proxy so the app can call same-origin /api/*.
+  server: {
+    proxy: {
+      '/api/archive': {
+        target: 'https://archive-api.open-meteo.com',
+        changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/api\/archive/, '/v1/archive'),
+      },
+      '/api/forecast': {
+        target: 'https://api.open-meteo.com',
+        changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/api\/forecast/, '/v1/forecast'),
+      },
+    },
+  },
   plugins: [
     react(),
     VitePWA({

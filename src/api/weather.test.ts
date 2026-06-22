@@ -21,7 +21,7 @@ const RAW = {
 describe('weather api', () => {
   it('builds an archive url with all daily vars', () => {
     const url = buildWeatherUrl(PARAMS)
-    expect(url).toContain('archive-api.open-meteo.com/v1/archive')
+    expect(url).toContain('/api/archive')
     expect(url).toContain('latitude=45.75')
     expect(url).toContain('start_date=2020-01-01')
     expect(url).toContain('temperature_2m_mean')
@@ -32,8 +32,8 @@ describe('weather api', () => {
   })
 
   it('routes recent ranges to the forecast API, old ranges to the archive', () => {
-    expect(weatherApiBase('2020-01-01')).toContain('archive-api.open-meteo.com')
-    expect(weatherApiBase(toISODate(new Date()))).toContain('api.open-meteo.com/v1/forecast')
+    expect(weatherApiBase('2020-01-01')).toBe('/api/archive')
+    expect(weatherApiBase(toISODate(new Date()))).toBe('/api/forecast')
   })
 
   it('normalizes raw response into WeatherSeries', () => {
