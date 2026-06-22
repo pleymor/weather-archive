@@ -5,3 +5,7 @@ dist-ssr/
 .DS_Store
 *.log
 dev-dist/
+
+# Deploy target details — kept out of the public repo
+deploy/deploy.config.sh
+deploy/nginx-archivesmeteo.conf

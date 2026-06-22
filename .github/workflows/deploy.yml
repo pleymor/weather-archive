@@ -1,0 +1,40 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Never run two deploys at once; a newer push supersedes an in-flight one.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          install -m 600 /dev/stdin ~/.ssh/deploy_key <<< "${{ secrets.DEPLOY_SSH_KEY }}"
+          install -m 644 /dev/stdin ~/.ssh/known_hosts <<< "${{ secrets.DEPLOY_KNOWN_HOSTS }}"
+
+      - name: Deploy dist/ to the VPS
+        run: |
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o UserKnownHostsFile=~/.ssh/known_hosts" \
+            dist/ "${{ secrets.DEPLOY_TARGET }}:${{ secrets.DEPLOY_PATH }}/"
