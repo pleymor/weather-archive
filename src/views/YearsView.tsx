@@ -6,6 +6,7 @@ import { ThisDayChart, type ThisDayDatum } from '../components/ThisDayChart'
 import { monthDay, thisDayAcrossYears, computeRecords, climateStats, linearFit, annualExtremes } from '../lib/insights'
 import { displayTemp, displayWind, tempUnitLabel, windUnitLabel } from '../lib/units'
 import { formatLongDate, toISODate, formatShortDate } from '../lib/dates'
+import { apiErrorMessage } from '../lib/apiError'
 
 const MIN_DECADE = 1940
 const CURRENT_DECADE = Math.floor(new Date().getUTCFullYear() / 10) * 10
@@ -102,7 +103,7 @@ export function YearsView() {
           <div className="charts-grid"><div className="chart chart--skeleton" /></div>
         </>
       )}
-      {history.isError && <p className="error error--banner">Impossible de récupérer cette décennie. Réessayez.</p>}
+      {history.isError && <p className="error error--banner">{apiErrorMessage(history.error)}</p>}
 
       {series && (
         <>

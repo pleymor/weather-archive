@@ -10,6 +10,7 @@ import { AnomalyChart } from '../components/AnomalyChart'
 import { ComparisonChart } from '../components/ComparisonChart'
 import { CompareControl } from '../components/CompareControl'
 import { mergeMeanByDate } from '../lib/compare'
+import { apiErrorMessage } from '../lib/apiError'
 import { validateRange } from '../lib/dates'
 import { convertDays, displayTemp, displayWind, displayTempDelta, tempUnitLabel, windUnitLabel } from '../lib/units'
 import { enrichWithNormals, meanAnomaly } from '../lib/climate'
@@ -31,7 +32,7 @@ export function ChartsView() {
       ? { latitude: location.latitude, longitude: location.longitude, startDate: start, endDate: end }
       : null
 
-  const { data, isFetching, isError } = useWeather(params)
+  const { data, isFetching, isError, error } = useWeather(params)
 
   const compareParams: WeatherParams | null =
     location && state.compare && rangeValid
@@ -122,7 +123,7 @@ export function ChartsView() {
       {isFetching && (
         <div className="charts-grid">{[0, 1, 2].map((i) => <div key={i} className="chart chart--skeleton" />)}</div>
       )}
-      {isError && <p className="error error--banner">Impossible de récupérer les données. Vérifiez votre connexion et réessayez.</p>}
+      {isError && <p className="error error--banner">{apiErrorMessage(error)}</p>}
       {data && !isFetching && (
         <div className="charts-grid">
           {merged && state.compare && (

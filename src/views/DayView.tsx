@@ -5,6 +5,7 @@ import { useWeather } from '../hooks/useWeather'
 import { useHourly } from '../hooks/useHourly'
 import { HourlyForecast } from '../components/HourlyForecast'
 import { validateSingleDate, formatLongDate, maxDate } from '../lib/dates'
+import { apiErrorMessage } from '../lib/apiError'
 import { displayTemp, displayWind, tempUnitLabel, windUnitLabel } from '../lib/units'
 import type { WeatherParams } from '../api/weather'
 
@@ -30,7 +31,7 @@ export function DayView() {
       ? { latitude: location.latitude, longitude: location.longitude, startDate: date, endDate: date }
       : null
 
-  const { data, isFetching, isError } = useWeather(params)
+  const { data, isFetching, isError, error } = useWeather(params)
   const day = data?.days[0]
   const hourly = useHourly(location, dateValid ? date : '')
 
@@ -67,7 +68,7 @@ export function DayView() {
       {isFetching && (
         <div className="stat-grid">{[0, 1, 2, 3, 4].map((i) => <div key={i} className="stat stat--skeleton" />)}</div>
       )}
-      {isError && <p className="error error--banner">Impossible de récupérer les données. Vérifiez votre connexion et réessayez.</p>}
+      {isError && <p className="error error--banner">{apiErrorMessage(error)}</p>}
       {day && !isFetching && (
         <>
           <h2 className="day-view__title">{formatLongDate(day.date)}</h2>
