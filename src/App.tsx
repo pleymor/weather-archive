@@ -2,6 +2,7 @@ import { LocationSearch } from './components/LocationSearch'
 import { HeaderControls } from './components/HeaderControls'
 import { ChartsView } from './views/ChartsView'
 import { DayView } from './views/DayView'
+import { YearsView } from './views/YearsView'
 import { useAppState } from './state/AppStateContext'
 import type { AppMode } from './lib/urlState'
 import './App.css'
@@ -9,7 +10,14 @@ import './App.css'
 const TABS: { mode: AppMode; label: string }[] = [
   { mode: 'charts', label: '📈 Graphiques' },
   { mode: 'day', label: '📅 Un jour donné' },
+  { mode: 'years', label: '📜 Records & histoire' },
 ]
+
+function renderView(mode: AppMode) {
+  if (mode === 'day') return <DayView />
+  if (mode === 'years') return <YearsView />
+  return <ChartsView />
+}
 
 function CurrentLocation() {
   const { state } = useAppState()
@@ -52,7 +60,7 @@ export default function App() {
         ))}
       </nav>
 
-      <main className="app-main">{state.mode === 'day' ? <DayView /> : <ChartsView />}</main>
+      <main className="app-main">{renderView(state.mode)}</main>
 
       <footer className="app-footer">
         Données <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo</a> · archives depuis 1940

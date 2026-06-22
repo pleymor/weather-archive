@@ -248,7 +248,7 @@ body {
    ============================================================ */
 .tabs {
   position: relative;
-  display: grid; grid-template-columns: 1fr 1fr;
+  display: flex; flex-wrap: wrap;
   gap: 0.25rem; padding: 0.3rem;
   margin: 0 0 1.75rem;
   background: var(--surface);
@@ -256,8 +256,9 @@ body {
   border-radius: var(--radius-pill);
   box-shadow: var(--shadow-sm);
   backdrop-filter: blur(14px);
-  max-width: 420px;
+  max-width: 620px;
 }
+.tabs button { flex: 1 1 auto; white-space: nowrap; }
 .tabs button {
   position: relative; z-index: 1;
   padding: 0.6rem 1rem; border: 0; background: none; cursor: pointer;
@@ -386,6 +387,8 @@ body {
 .stat--cyan::before { background: #38bdf8; }
 .stat--teal::before { background: #14b8a6; }
 .stat--skeleton { height: 130px; }
+.stat__sub { margin: 0.35rem 0 0; font-size: 0.78rem; color: var(--text-dim); text-transform: capitalize; }
+.years-view__hint { margin: 0; color: var(--text-dim); font-size: 0.82rem; align-self: center; }
 
 /* ============================================================
    Empty states + errors + spinner
