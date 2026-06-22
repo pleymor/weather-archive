@@ -18,7 +18,7 @@ describe('toCSV', () => {
     const lines = csv.split('\n')
     expect(lines).toHaveLength(3)
     expect(lines[0]).toContain('Temp max (°C)')
-    expect(lines[0]).toContain('Vent max (km/h)')
+    expect(lines[0]).toContain('Rafales (km/h)')
     expect(lines[1]).toBe('2020-01-01;6;1;3.5;0;12')
   })
 

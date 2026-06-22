@@ -5,7 +5,7 @@ import { displayTemp, displayWind, tempUnitLabel, windUnitLabel, type Units } fr
 export function toCSV(series: WeatherSeries, units: Units): string {
   const t = tempUnitLabel(units.temp)
   const w = windUnitLabel(units.wind)
-  const header = ['Date', `Temp max (${t})`, `Temp min (${t})`, `Temp moy (${t})`, 'Précipitations (mm)', `Vent max (${w})`]
+  const header = ['Date', `Temp max (${t})`, `Temp min (${t})`, `Temp moy (${t})`, 'Précipitations (mm)', `Rafales (${w})`]
   const rows = series.days.map((d) => [
     d.date,
     fmt(displayTemp(d.tempMax, units.temp)),

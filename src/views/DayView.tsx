@@ -50,7 +50,7 @@ export function DayView() {
         { icon: '❄️', label: 'Température min', value: fmt(displayTemp(day.tempMin, units.temp), t), tint: 'sky' },
         { icon: '🌡️', label: 'Température moyenne', value: fmt(displayTemp(day.tempMean, units.temp), t), tint: 'indigo' },
         { icon: '🌧️', label: 'Précipitations', value: fmt(day.precipitation, 'mm'), tint: 'cyan' },
-        { icon: '💨', label: 'Vent max', value: fmt(displayWind(day.windMax, units.wind), w), tint: 'teal' },
+        { icon: '💨', label: 'Rafales', value: fmt(displayWind(day.windMax, units.wind), w), tint: 'teal' },
       ]
     : []
 

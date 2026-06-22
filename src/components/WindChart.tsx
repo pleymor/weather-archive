@@ -8,7 +8,7 @@ export function WindChart({ days, unit = 'km/h' }: { days: WeatherDay[]; unit?: 
     <div data-testid="wind-chart" data-points={days.length} className="chart">
       <div className="chart__head">
         <span className="chart__icon" style={{ background: 'rgba(20,184,166,.14)', color: CHART_COLORS.wind }}>💨</span>
-        <h3>Vent max</h3>
+        <h3>Rafales</h3>
         <span className="chart__unit">{unit}</span>
       </div>
       <ResponsiveContainer width="100%" height={280}>
@@ -23,7 +23,7 @@ export function WindChart({ days, unit = 'km/h' }: { days: WeatherDay[]; unit?: 
           <XAxis {...xAxisProps} />
           <YAxis {...axisProps} width={44} />
           <Tooltip content={(p) => <ChartTooltip {...p} unit={unit} />} cursor={{ stroke: 'var(--chart-grid)' }} />
-          <Area type="monotone" dataKey="windMax" name="Vent max" stroke={CHART_COLORS.wind} strokeWidth={2.5} fill="url(#gradWind)" dot={false} activeDot={{ r: 4 }} />
+          <Area type="monotone" dataKey="windMax" name="Rafales" stroke={CHART_COLORS.wind} strokeWidth={2.5} fill="url(#gradWind)" dot={false} activeDot={{ r: 4 }} />
         </AreaChart>
       </ResponsiveContainer>
     </div>

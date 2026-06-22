@@ -5,7 +5,7 @@ export const WEATHER_DAILY_VARS = [
   'temperature_2m_min',
   'temperature_2m_mean',
   'precipitation_sum',
-  'wind_speed_10m_max',
+  'wind_gusts_10m_max',
 ] as const
 
 export interface WeatherParams {
@@ -52,7 +52,7 @@ export function normalizeArchiveResponse(raw: unknown, p: WeatherParams): Weathe
     tempMin: num(daily.temperature_2m_min, i),
     tempMean: num(daily.temperature_2m_mean, i),
     precipitation: num(daily.precipitation_sum, i),
-    windMax: num(daily.wind_speed_10m_max, i),
+    windMax: num(daily.wind_gusts_10m_max, i), // daily max wind gust (rafales)
   }))
   return {
     location: { latitude: p.latitude, longitude: p.longitude },
