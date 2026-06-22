@@ -119,6 +119,9 @@ body {
 .app-header { margin-bottom: 1.5rem; }
 .toolbar__actions { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
 .chip--action { color: var(--accent); border-color: var(--accent); }
+.chip:disabled { opacity: 0.4; cursor: not-allowed; }
+.decade-nav { display: flex; align-items: center; justify-content: center; gap: 0.9rem; margin: 0 0 1.5rem; }
+.decade-nav__label { font-weight: 800; font-size: 1.05rem; white-space: nowrap; }
 .brand { display: flex; align-items: center; gap: 0.85rem; margin-bottom: 1.25rem; }
 .brand__logo {
   font-size: 2rem;

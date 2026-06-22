@@ -1,23 +1,26 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useAppState } from '../state/AppStateContext'
 import { useSettings } from '../state/SettingsContext'
-import { useFullHistory } from '../hooks/useFullHistory'
+import { useDecade } from '../hooks/useDecade'
 import { ThisDayChart, type ThisDayDatum } from '../components/ThisDayChart'
 import { monthDay, thisDayAcrossYears, computeRecords, climateStats, linearFit, annualExtremes } from '../lib/insights'
 import { displayTemp, displayWind, tempUnitLabel, windUnitLabel } from '../lib/units'
 import { formatLongDate, toISODate, formatShortDate } from '../lib/dates'
+
+const MIN_DECADE = 1940
+const CURRENT_DECADE = Math.floor(new Date().getUTCFullYear() / 10) * 10
 
 export function YearsView() {
   const { state } = useAppState()
   const { units } = useSettings()
   const { location, date } = state
   const md = monthDay(date || toISODate(new Date()))
+  const [decade, setDecade] = useState(CURRENT_DECADE)
 
-  const history = useFullHistory(location)
+  const history = useDecade(location, decade)
   const series = history.data
 
   const yearValues = useMemo(() => (series ? thisDayAcrossYears(series, md) : []), [series, md])
-
   const annual = useMemo(() => (series ? annualExtremes(series) : []), [series])
 
   // Builds a year/value/trend series from any per-year rows, converting units.
@@ -79,20 +82,31 @@ export function YearsView() {
 
   const t = tempUnitLabel(units.temp)
   const w = windUnitLabel(units.wind)
+  const decadeLabel = `années ${decade}`
 
   return (
     <section className="years-view">
+      <div className="decade-nav">
+        <button type="button" className="chip" onClick={() => setDecade((d) => d - 10)} disabled={decade <= MIN_DECADE}>
+          ◀ {decade - 10}s
+        </button>
+        <span className="decade-nav__label">Années {decade}–{decade + 9}</span>
+        <button type="button" className="chip" onClick={() => setDecade((d) => d + 10)} disabled={decade >= CURRENT_DECADE}>
+          {decade + 10}s ▶
+        </button>
+      </div>
+
       {history.isLoading && (
         <>
-          <p className="loading">Chargement de l'historique complet (depuis 1940)… cela peut prendre quelques secondes la première fois.</p>
+          <p className="loading">Chargement des {decadeLabel}…</p>
           <div className="charts-grid"><div className="chart chart--skeleton" /></div>
         </>
       )}
-      {history.isError && <p className="error error--banner">Impossible de récupérer l'historique. Réessayez.</p>}
+      {history.isError && <p className="error error--banner">Impossible de récupérer cette décennie. Réessayez.</p>}
 
       {series && (
         <>
-          <h2 className="day-view__title">Le {formatShortDate(`2000-${md}`)} à travers les années</h2>
+          <h2 className="day-view__title">Le {formatShortDate(`2000-${md}`)} à travers les {decadeLabel}</h2>
           <div className="charts-grid charts-grid--pair">
             <ThisDayChart data={maxData} unit={t} mid={midOf(maxData)} title="Température maximale" icon="🔥" accent="#f97316" />
             <ThisDayChart data={minData} unit={t} mid={midOf(minData)} title="Température minimale" icon="❄️" accent="#0ea5e9" />
@@ -101,7 +115,7 @@ export function YearsView() {
           </div>
 
           <h2 className="day-view__title">Records par année</h2>
-          <p className="years-view__hint">L'extrême de chaque année, toutes dates confondues (indépendant du jour ci-dessus).</p>
+          <p className="years-view__hint">L'extrême de chaque année de la décennie, toutes dates confondues.</p>
           <div className="charts-grid charts-grid--pair">
             <ThisDayChart data={annualTemp.hottest} unit={t} mid={midOf(annualTemp.hottest)} title="Jour le plus chaud" icon="🔥" accent="#f97316" />
             <ThisDayChart data={annualTemp.coldest} unit={t} mid={midOf(annualTemp.coldest)} title="Jour le plus froid" icon="❄️" accent="#0ea5e9" />
@@ -112,7 +126,7 @@ export function YearsView() {
 
           {records && (
             <>
-              <h2 className="day-view__title">Records absolus depuis {stats?.years ? `${series.days[0].date.slice(0, 4)}` : '1940'}</h2>
+              <h2 className="day-view__title">Records de la décennie {decade}</h2>
               <dl className="stat-grid">
                 <RecordTile icon="🔥" label="Jour le plus chaud" rec={records.hottest} unit={t} tint="orange" conv={(v) => displayTemp(v, units.temp)} />
                 <RecordTile icon="❄️" label="Jour le plus froid" rec={records.coldest} unit={t} tint="sky" conv={(v) => displayTemp(v, units.temp)} />
@@ -124,7 +138,7 @@ export function YearsView() {
 
           {stats && (
             <>
-              <h2 className="day-view__title">Synthèse climatique</h2>
+              <h2 className="day-view__title">Synthèse climatique {decade}–{decade + 9}</h2>
               <dl className="stat-grid">
                 <div className="stat stat--indigo"><span className="stat__icon">🌡️</span><dt>Température moyenne</dt><dd>{stats.avgTemp === null ? '—' : `${displayTemp(stats.avgTemp, units.temp)} ${t}`}</dd></div>
                 <div className="stat stat--sky"><span className="stat__icon">🧊</span><dt>Jours de gel / an</dt><dd>{stats.frostDaysPerYear === null ? '—' : Math.round(stats.frostDaysPerYear)}</dd></div>
