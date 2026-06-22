@@ -386,6 +386,17 @@ body {
 .empty-state h2 { margin: 0 0 0.4rem; font-size: 1.2rem; font-weight: 700; }
 .empty-state p { margin: 0; color: var(--text-dim); }
 
+.anomaly-banner {
+  display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap;
+  margin-bottom: 1.25rem; padding: 0.9rem 1.2rem;
+  border-radius: var(--radius); border: 1px solid var(--border);
+  background: var(--surface); box-shadow: var(--shadow-sm); backdrop-filter: blur(12px);
+}
+.anomaly-banner strong { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; }
+.anomaly-banner span { color: var(--text-dim); font-size: 0.9rem; }
+.anomaly-banner--warm strong { color: #ef4444; }
+.anomaly-banner--cool strong { color: #3b82f6; }
+
 .error { color: var(--danger); font-size: 0.9rem; font-weight: 600; }
 .error--banner {
   padding: 0.9rem 1.1rem; border-radius: var(--radius-sm);

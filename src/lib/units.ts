@@ -36,6 +36,16 @@ export function displayTemp(celsius: number | null, unit: TempUnit): number | nu
   return celsius === null ? null : round1(convertTemp(celsius, unit))
 }
 
+/** Converts a temperature *difference* (no offset): °C delta to °F delta scales by 9/5. */
+export function convertTempDelta(celsiusDelta: number, unit: TempUnit): number {
+  return unit === 'F' ? celsiusDelta * 9 / 5 : celsiusDelta
+}
+
+/** Converts a temperature delta to the chosen unit, rounded. Null-safe. */
+export function displayTempDelta(celsiusDelta: number | null, unit: TempUnit): number | null {
+  return celsiusDelta === null ? null : round1(convertTempDelta(celsiusDelta, unit))
+}
+
 /** Converts a raw km/h value to the chosen unit, rounded for display. Null-safe. */
 export function displayWind(kmh: number | null, unit: WindUnit): number | null {
   return kmh === null ? null : round1(convertWind(kmh, unit))

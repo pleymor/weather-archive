@@ -1,15 +1,21 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useAppState } from '../state/AppStateContext'
 import { useSettings } from '../state/SettingsContext'
 import { useWeather } from '../hooks/useWeather'
+import { useNormals } from '../hooks/useNormals'
 import { DateRangePicker } from '../components/DateRangePicker'
 import { TemperatureChart } from '../components/TemperatureChart'
 import { PrecipitationChart } from '../components/PrecipitationChart'
 import { WindChart } from '../components/WindChart'
+import { AnomalyChart } from '../components/AnomalyChart'
 import { validateRange, maxDate, toISODate } from '../lib/dates'
-import { convertDays, tempUnitLabel, windUnitLabel } from '../lib/units'
+import { convertDays, displayTemp, displayWind, displayTempDelta, tempUnitLabel, windUnitLabel } from '../lib/units'
+import { enrichWithNormals, meanAnomaly } from '../lib/climate'
 import { toCSV, downloadText } from '../lib/exportData'
 import type { WeatherParams } from '../api/weather'
+import type { WeatherDay } from '../lib/types'
+
+type ChartDay = WeatherDay & { normalMean?: number | null; anomaly?: number | null }
 
 const PRESETS = [
   { label: '7 jours', days: 7 },
@@ -29,6 +35,7 @@ export function ChartsView() {
   const { state, setRange } = useAppState()
   const { units } = useSettings()
   const { location, start, end } = state
+  const [showNormals, setShowNormals] = useState(false)
 
   const rangeValid = Boolean(start && end) && validateRange(start, end).ok
   const params: WeatherParams | null =
@@ -37,7 +44,35 @@ export function ChartsView() {
       : null
 
   const { data, isFetching, isError } = useWeather(params)
-  const displayDays = useMemo(() => (data ? convertDays(data.days, units) : []), [data, units])
+  const normalsQuery = useNormals(location, showNormals && !!data)
+  const normals = normalsQuery.data
+
+  const enriched = useMemo(
+    () => (data && normals ? enrichWithNormals(data.days, normals) : null),
+    [data, normals],
+  )
+
+  const chartDays = useMemo<ChartDay[]>(() => {
+    if (!data) return []
+    if (showNormals && enriched) {
+      return enriched.map((d) => ({
+        date: d.date,
+        tempMax: displayTemp(d.tempMax, units.temp),
+        tempMin: displayTemp(d.tempMin, units.temp),
+        tempMean: displayTemp(d.tempMean, units.temp),
+        precipitation: d.precipitation,
+        windMax: displayWind(d.windMax, units.wind),
+        normalMean: displayTemp(d.normalMean, units.temp),
+        anomaly: displayTempDelta(d.anomaly, units.temp),
+      }))
+    }
+    return convertDays(data.days, units)
+  }, [data, units, showNormals, enriched])
+
+  const anomalyAvg = useMemo(
+    () => (showNormals && enriched ? displayTempDelta(meanAnomaly(enriched), units.temp) : null),
+    [showNormals, enriched, units.temp],
+  )
 
   if (!location) {
     return (
@@ -53,6 +88,9 @@ export function ChartsView() {
     if (!data) return
     downloadText(`meteo_${location!.name}_${start}_${end}.csv`, toCSV(data, units))
   }
+
+  const t = tempUnitLabel(units.temp)
+  const normalsReady = showNormals && enriched
 
   return (
     <section className="charts-view">
@@ -70,11 +108,20 @@ export function ChartsView() {
               )
             })}
           </div>
-          {data && (
-            <button type="button" className="chip chip--action" onClick={exportCsv}>⬇ CSV</button>
-          )}
+          <button type="button" className={`chip${showNormals ? ' is-active' : ''}`} aria-pressed={showNormals} onClick={() => setShowNormals((v) => !v)}>
+            📏 Normales
+          </button>
+          {data && <button type="button" className="chip chip--action" onClick={exportCsv}>⬇ CSV</button>}
         </div>
       </div>
+
+      {normalsReady && anomalyAvg !== null && (
+        <div className={`anomaly-banner ${anomalyAvg >= 0 ? 'anomaly-banner--warm' : 'anomaly-banner--cool'}`}>
+          <strong>{anomalyAvg >= 0 ? '+' : ''}{anomalyAvg} {t}</strong>
+          <span>en moyenne {anomalyAvg >= 0 ? 'au-dessus' : 'en dessous'} de la normale 1991-2020 sur la période</span>
+        </div>
+      )}
+      {showNormals && normalsQuery.isFetching && <p className="loading">Calcul des normales (1991-2020)…</p>}
 
       {!rangeValid && !isFetching && (
         <div className="empty-state empty-state--soft">
@@ -88,9 +135,10 @@ export function ChartsView() {
       {isError && <p className="error error--banner">Impossible de récupérer les données. Vérifiez votre connexion et réessayez.</p>}
       {data && !isFetching && (
         <div className="charts-grid">
-          <TemperatureChart days={displayDays} unit={tempUnitLabel(units.temp)} />
-          <PrecipitationChart days={displayDays} />
-          <WindChart days={displayDays} unit={windUnitLabel(units.wind)} />
+          <TemperatureChart days={chartDays} unit={t} showNormal={!!normalsReady} />
+          {normalsReady && <AnomalyChart days={chartDays} unit={t} />}
+          <PrecipitationChart days={chartDays} />
+          <WindChart days={chartDays} unit={windUnitLabel(units.wind)} />
         </div>
       )}
     </section>

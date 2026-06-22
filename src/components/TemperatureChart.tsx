@@ -2,7 +2,7 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContai
 import type { WeatherDay } from '../lib/types'
 import { CHART_COLORS, xAxisProps, axisProps, gridProps, ChartTooltip } from './chartTheme'
 
-export function TemperatureChart({ days, unit = '°C' }: { days: WeatherDay[]; unit?: string }) {
+export function TemperatureChart({ days, unit = '°C', showNormal = false }: { days: WeatherDay[]; unit?: string; showNormal?: boolean }) {
   if (days.length === 0) return <p className="chart-empty">Aucune donnée à afficher.</p>
   return (
     <div data-testid="temperature-chart" data-points={days.length} className="chart">
@@ -30,12 +30,16 @@ export function TemperatureChart({ days, unit = '°C' }: { days: WeatherDay[]; u
           <Area type="monotone" dataKey="tempMax" name="Max" stroke={CHART_COLORS.tempMax} strokeWidth={2.5} fill="url(#gradMax)" dot={false} activeDot={{ r: 4 }} />
           <Area type="monotone" dataKey="tempMean" name="Moyenne" stroke={CHART_COLORS.tempMean} strokeWidth={2} fill="none" strokeDasharray="4 3" dot={false} activeDot={{ r: 4 }} />
           <Area type="monotone" dataKey="tempMin" name="Min" stroke={CHART_COLORS.tempMin} strokeWidth={2.5} fill="url(#gradMin)" dot={false} activeDot={{ r: 4 }} />
+          {showNormal && (
+            <Area type="monotone" dataKey="normalMean" name="Normale" stroke="var(--text-faint)" strokeWidth={2} fill="none" strokeDasharray="2 4" dot={false} activeDot={{ r: 3 }} />
+          )}
         </AreaChart>
       </ResponsiveContainer>
       <div className="chart__legend">
         <span><i style={{ background: CHART_COLORS.tempMax }} />Max</span>
         <span><i style={{ background: CHART_COLORS.tempMean }} />Moyenne</span>
         <span><i style={{ background: CHART_COLORS.tempMin }} />Min</span>
+        {showNormal && <span><i style={{ background: 'var(--text-faint)' }} />Normale 1991-2020</span>}
       </div>
     </div>
   )
