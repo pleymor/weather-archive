@@ -8,8 +8,8 @@ describe('dates', () => {
     expect(toISODate(new Date('2020-03-05T23:00:00Z'))).toBe('2020-03-05')
   })
 
-  it('maxDate is yesterday', () => {
-    expect(maxDate(TODAY)).toBe('2026-06-20')
+  it('maxDate is today', () => {
+    expect(maxDate(TODAY)).toBe('2026-06-21')
   })
 
   it('validateRange accepts a valid range', () => {
@@ -26,9 +26,9 @@ describe('dates', () => {
     expect(MIN_DATE).toBe('1940-01-01')
   })
 
-  it('rejects future dates', () => {
-    expect(validateSingleDate('2026-06-21', TODAY).ok).toBe(false)
-    expect(validateSingleDate('2026-06-20', TODAY)).toEqual({ ok: true })
+  it('rejects future dates but allows today', () => {
+    expect(validateSingleDate('2026-06-22', TODAY).ok).toBe(false) // tomorrow
+    expect(validateSingleDate('2026-06-21', TODAY)).toEqual({ ok: true }) // today
   })
 
   it('formatLongDate renders a full French date', () => {

@@ -34,10 +34,12 @@ export function formatLongDate(iso: string): string {
   }).format(date)
 }
 
+/**
+ * Latest selectable day. Open-Meteo's archive serves today too (with provisional,
+ * forecast-blended values since the day isn't over), so we allow up to today.
+ */
 export function maxDate(today: Date = new Date()): string {
-  const yesterday = new Date(today)
-  yesterday.setUTCDate(yesterday.getUTCDate() - 1)
-  return toISODate(yesterday)
+  return toISODate(today)
 }
 
 type Result = { ok: true } | { ok: false; error: string }

@@ -18,7 +18,7 @@ export function DayView() {
   const { units } = useSettings()
   const { location, date } = state
 
-  // Default to the most recent available day (yesterday — today isn't in the archive yet).
+  // Default to today (Open-Meteo serves provisional values for the current day).
   useEffect(() => {
     if (!date) setDate(maxDate())
   }, [date, setDate])
