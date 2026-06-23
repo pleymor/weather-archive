@@ -4,16 +4,17 @@ PWA de consultation des archives météo officielles (France et au-delà), à pa
 des données [Open-Meteo](https://open-meteo.com/). En ligne :
 **https://archivesmeteo.pleymor.com**
 
-Quatre modes :
+Trois modes :
 
-- **Graphiques** — température (min/max/moy), précipitations et vent d'un lieu sur
-  une période ; superposition des **normales 1991-2020** et **écarts à la normale** ;
-  **comparaison** avec une autre ville.
-- **Un jour donné** — la météo détaillée d'un lieu à une date précise.
-- **Records & histoire** — météo d'un jour calendaire à travers toutes les années
-  (avec tendance), records absolus et synthèse climatique depuis 1940.
-- **Carte** — choroplèthe de France colorée par la température, zoom région →
-  départements, clic pour ouvrir un lieu.
+- **Jour** — la météo détaillée d'un lieu à une date précise (heure par heure +
+  résumé du jour), avec un volet dépliable **Records & histoire du lieu** : météo de
+  ce jour calendaire à travers les années (avec tendance), records absolus et synthèse
+  climatique depuis 1940.
+- **Période** — graphiques de température (min/max/moy), précipitations et vent d'un
+  lieu sur une période ; superposition des **normales 1991-2020** et **écarts à la
+  normale** ; **comparaison** avec une autre ville.
+- **Carte** — choroplèthe de France colorée par la température (bascule **Min/Max**),
+  zoom région → départements, clic pour ouvrir un lieu.
 
 Autres fonctionnalités : **URLs partageables** (l'état est dans l'URL), **lieux
 favoris & récents**, bascule d'**unités** (°C/°F, km/h / m/s / mph), **export CSV**,
@@ -22,12 +23,19 @@ installable en **PWA** avec cache hors-ligne.
 ## Stack
 
 React 19 · Vite 8 · TypeScript · TanStack Query · Recharts · IndexedDB (`idb`) ·
-vite-plugin-pwa (Workbox). 100 % front-end, sans backend.
+vite-plugin-pwa (Workbox). SPA front-end, servie derrière un mince reverse-proxy
+nginx qui met en cache les réponses Open-Meteo (pas de backend applicatif).
 
 ## Données
 
-- Archive API : `https://archive-api.open-meteo.com/v1/archive` (historique depuis 1940).
-- Geocoding : `https://geocoding-api.open-meteo.com/v1/search`.
+- Données météo : Open-Meteo, atteint via un proxy **same-origin** (`/api/*`) :
+  - `/api/archive` → `archive-api.open-meteo.com/v1/archive` (historique depuis 1940) ;
+  - `/api/forecast` → `api.open-meteo.com/v1/forecast` pour les ~90 derniers jours
+    (inclut les valeurs provisoires du jour même).
+
+  Le choix de l'endpoint est automatique selon la date de début demandée
+  (`weatherApiBase`).
+- Geocoding : `https://geocoding-api.open-meteo.com/v1/search` (appelé directement).
 - Reverse-geocoding (géolocalisation) : BigDataCloud (gratuit, sans clé).
 - Fonds de carte : GeoJSON régions/départements simplifiés
   ([gregoiredavid/france-geojson](https://github.com/gregoiredavid/france-geojson)),
@@ -35,35 +43,45 @@ vite-plugin-pwa (Workbox). 100 % front-end, sans backend.
 
 Les données historiques sont immuables et mises en cache de façon permanente dans
 IndexedDB ; l'app est installable et consultable hors-ligne pour les requêtes déjà
-chargées.
+chargées. Côté serveur, nginx met en cache les réponses Open-Meteo et les partage
+entre tous les visiteurs (une seule requête amont par couple lieu/période).
 
 ## Fonctionnement technique
 
 ### Architecture
 
-Application 100 % front-end. L'état applicatif (mode, lieu, période ou date, lieu de
+SPA React servie en statique ; les seules dépendances serveur sont nginx (fichiers
+statiques + proxy de cache vers Open-Meteo) et BigDataCloud/Geocoding appelés
+directement. L'état applicatif (mode, lieu, période ou date, lieu de
 comparaison) vit dans un contexte React et est sérialisé dans l'URL (`lib/urlState`)
-— d'où les liens partageables. Les vues (`ChartsView`, `DayView`, `YearsView`,
-`MapView`) lisent cet état et déclenchent les requêtes via des hooks TanStack Query :
-`useWeather` (série sur une période), `useHourly` (heure par heure), `useNormals`
-(normales 1991-2020), `useFullHistory` (tout l'historique d'un lieu) et
+— d'où les liens partageables. Les vues (`DayView`, `ChartsView`, `MapView`) lisent
+cet état et déclenchent les requêtes via des hooks TanStack Query : `useWeather`
+(série sur une période), `useHourly` (heure par heure), `useNormals` (normales
+1991-2020), `useFullHistory` / `useDecade` (historique d'un lieu pour les records) et
 `useChoropleth` (carte).
 
 ### Récupération des données météo
 
-Les données historiques étant immuables, la récupération est **cache-first sur deux
+Les données historiques étant immuables, la récupération est **cache-first sur trois
 niveaux** :
 
 1. **Cache mémoire** de TanStack Query (`staleTime: Infinity`) — réponse instantanée
    si la requête a déjà été faite dans la session.
 2. **Cache persistant IndexedDB** (`cache/weatherCache`), clé `lat|lon|start|end` —
    survit aux rechargements et permet la consultation **hors-ligne**.
+3. **Cache partagé nginx** côté serveur — une seule requête amont vers Open-Meteo par
+   couple lieu/période, mutualisée entre tous les visiteurs.
 
-Le réseau (`fetchWeather` → Archive API) n'est sollicité que si les deux caches sont
-vides ; la réponse JSON est normalisée (`normalizeArchiveResponse`) en `WeatherSeries`
-puis stockée. Les erreurs **429** (rate-limit Open-Meteo) sont rejouées avec un backoff
-exponentiel (2 s → 4 s → 8 s) et la carte limite la concurrence à 4 requêtes
-simultanées. Le même chemin sert le mode « Un jour donné » (période d'un seul jour).
+Le réseau (`fetchWeather`) n'est sollicité que si les caches client sont vides ; il
+vise le proxy same-origin `/api/archive` ou `/api/forecast` (`weatherApiBase` choisit
+selon la date), où nginx sert depuis son cache ou interroge Open-Meteo. La réponse JSON
+est normalisée (`normalizeArchiveResponse`) en `WeatherSeries` puis stockée. Les erreurs
+**429** (rate-limit Open-Meteo) sont rejouées avec un backoff exponentiel
+(2 s → 4 s → 8 s) et la carte limite la concurrence à 4 requêtes simultanées. Le même
+chemin sert le mode « Jour » (période d'un seul jour).
+
+En développement, c'est Vite qui reproduit le proxy `/api/*` (voir `vite.config.ts`)
+pour que l'app appelle les mêmes URLs same-origin qu'en production.
 
 ```mermaid
 sequenceDiagram
@@ -71,7 +89,8 @@ sequenceDiagram
     participant V as Vue (ChartsView)
     participant Q as useWeather (TanStack Query)
     participant C as IndexedDB (weatherCache)
-    participant API as Open-Meteo Archive API
+    participant N as nginx (/api/*, cache partagé)
+    participant API as Open-Meteo (archive / forecast)
 
     U->>V: choisit un lieu + une période
     V->>V: construit WeatherParams {lat, lon, startDate, endDate}
@@ -85,13 +104,19 @@ sequenceDiagram
         alt présent dans IndexedDB
             C-->>Q: WeatherSeries (hors-ligne possible)
         else absent
-            Q->>API: GET /v1/archive?latitude&longitude&start_date&end_date&daily=…
+            Q->>N: GET /api/archive ou /api/forecast?latitude&longitude&start_date&end_date&daily=…
+            alt cache nginx HIT
+                N-->>Q: JSON brut (depuis le cache partagé)
+            else cache MISS
+                N->>API: proxy_pass vers Open-Meteo
+                API-->>N: JSON brut (daily: time[], temperature_2m_max[], …)
+                N-->>Q: JSON brut (mis en cache)
+            end
             alt réponse OK
-                API-->>Q: JSON brut (daily: time[], temperature_2m_max[], …)
                 Q->>Q: normalizeArchiveResponse → WeatherSeries
                 Q->>C: putCachedWeather(params, series)
             else HTTP 429 / erreur
-                API-->>Q: HTTP 429
+                N-->>Q: HTTP 429
                 Note over Q: WeatherApiError(status)<br/>retry avec backoff exponentiel
             end
         end
