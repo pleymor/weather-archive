@@ -4,17 +4,11 @@ import { useSettings } from '../state/SettingsContext'
 import { useWeather } from '../hooks/useWeather'
 import { useHourly } from '../hooks/useHourly'
 import { HourlyForecast } from '../components/HourlyForecast'
+import { DaySummary } from '../components/DaySummary'
 import { RecordsHistory } from '../components/RecordsHistory'
 import { validateSingleDate, formatLongDate, maxDate } from '../lib/dates'
 import { apiErrorMessage } from '../lib/apiError'
-import { displayTemp, displayWind, tempUnitLabel, windUnitLabel } from '../lib/units'
 import type { WeatherParams } from '../api/weather'
-
-function fmt(value: number | null, unit: string): string {
-  return value === null ? '—' : `${value} ${unit}`
-}
-
-interface Stat { icon: string; label: string; value: string; tint: string }
 
 export function DayView() {
   const { state, setDate } = useAppState()
@@ -47,18 +41,6 @@ export function DayView() {
     )
   }
 
-  const t = tempUnitLabel(units.temp)
-  const w = windUnitLabel(units.wind)
-  const stats: Stat[] = day
-    ? [
-        { icon: '🔥', label: 'Température max', value: fmt(displayTemp(day.tempMax, units.temp), t), tint: 'orange' },
-        { icon: '❄️', label: 'Température min', value: fmt(displayTemp(day.tempMin, units.temp), t), tint: 'sky' },
-        { icon: '🌡️', label: 'Température moyenne', value: fmt(displayTemp(day.tempMean, units.temp), t), tint: 'indigo' },
-        { icon: '🌧️', label: 'Précipitations', value: fmt(day.precipitation, 'mm'), tint: 'cyan' },
-        { icon: '💨', label: 'Rafales', value: fmt(displayWind(day.windGust, units.wind), w), tint: 'teal' },
-      ]
-    : []
-
   return (
     <section className="day-view">
       {!dateValid && !isFetching && (
@@ -74,21 +56,13 @@ export function DayView() {
       {day && !isFetching && (
         <>
           <h2 className="day-view__title">{formatLongDate(day.date)}</h2>
-          <dl className="stat-grid">
-            {stats.map((s) => (
-              <div key={s.label} className={`stat stat--${s.tint}`}>
-                <span className="stat__icon">{s.icon}</span>
-                <dt>{s.label}</dt>
-                <dd>{s.value}</dd>
-              </div>
-            ))}
-          </dl>
           {hourly.data && hourly.data.length > 0 && (
             <>
               <h3 className="day-view__subtitle">Heure par heure</h3>
               <HourlyForecast hours={hourly.data} units={units} />
             </>
           )}
+          <DaySummary day={day} units={units} />
 
           <div className="disclosure">
             <button type="button" className="disclosure__toggle" aria-expanded={showRecords}

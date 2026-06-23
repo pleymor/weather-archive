@@ -499,9 +499,23 @@ body {
 .map-region:hover, .map-region.is-hover { stroke: var(--text); stroke-width: 1.6; opacity: 0.9; }
 .map-legend { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.75rem; font-size: 0.8rem; font-weight: 600; color: var(--text-dim); }
 .map-legend__bar { flex: 1; height: 10px; border-radius: 5px; max-width: 320px; }
+.map-legend__caption { color: var(--text); font-weight: 700; }
 
 /* Hourly forecast strip */
 .day-view__subtitle { margin: 1.75rem 0 0.5rem; font-size: 1rem; font-weight: 700; }
+
+/* Sleek one-line day summary (max/mean/min/precip/gust) */
+.day-summary {
+  display: flex; flex-wrap: wrap; align-items: baseline;
+  justify-content: space-around; gap: 0.6rem 1.25rem;
+  margin: 1.5rem 0 0; padding: 0.9rem 1.25rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow-sm); backdrop-filter: blur(12px);
+}
+.day-summary__item { display: flex; align-items: baseline; gap: 0.4rem; margin: 0; }
+.day-summary__icon { font-size: 1.05rem; }
+.day-summary__value { margin: 0; font-weight: 800; font-size: 1.05rem; color: var(--text); }
+.day-summary__label { color: var(--text-dim); font-size: 0.78rem; font-weight: 600; }
 
 /* CSV export, anchored at the bottom of the period view */
 .charts-view__footer { display: flex; justify-content: center; margin-top: 1.75rem; }

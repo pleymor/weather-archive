@@ -28,15 +28,33 @@ export function MapView() {
   const day = state.date && validateSingleDate(state.date).ok ? state.date : maxDate()
 
   const regionsQuery = useQuery({ queryKey: ['geo', 'regions'], staleTime: Infinity, gcTime: Infinity, queryFn: () => fetchGeo('/geo/regions.geojson') })
-  const deptsQuery = useQuery({ queryKey: ['geo', 'departements'], enabled: region !== null, staleTime: Infinity, gcTime: Infinity, queryFn: () => fetchGeo('/geo/departements.geojson') })
+  const deptsQuery = useQuery({ queryKey: ['geo', 'departements'], staleTime: Infinity, gcTime: Infinity, queryFn: () => fetchGeo('/geo/departements.geojson') })
+
+  // Always compute at department level; a region's value is the MAX of its departments,
+  // so a region is never shown cooler than a department it contains.
+  const allDepts = deptsQuery.data ?? []
+  const choropleth = useChoropleth(allDepts, day)
+  const deptValues = choropleth.data
+
+  const regionValues = useMemo(() => {
+    if (!regionsQuery.data || !deptValues) return null
+    const m = new Map<string, number | null>()
+    for (const r of regionsQuery.data) {
+      const vals = allDepts
+        .filter((d) => pointInFeature(...centroid(d), r))
+        .map((d) => deptValues.get(d.properties.code))
+        .filter((v): v is number => v != null)
+      m.set(r.properties.code, vals.length ? Math.max(...vals) : null)
+    }
+    return m
+  }, [regionsQuery.data, allDepts, deptValues])
 
   const displayed: GeoFeature[] = useMemo(() => {
-    if (region && deptsQuery.data) return deptsQuery.data.filter((d) => pointInFeature(...centroid(d), region))
+    if (region) return allDepts.filter((d) => pointInFeature(...centroid(d), region))
     return regionsQuery.data ?? []
-  }, [region, deptsQuery.data, regionsQuery.data])
+  }, [region, allDepts, regionsQuery.data])
 
-  const choropleth = useChoropleth(displayed, day)
-  const values = choropleth.data
+  const values = region ? deptValues : regionValues
 
   const [vmin, vmax] = useMemo(() => {
     if (!values) return [0, 0]
@@ -68,13 +86,13 @@ export function MapView() {
         ) : (
           <p className="years-view__hint">Cliquez une région pour zoomer sur ses départements, puis un département pour l'ouvrir.</p>
         )}
-        <span className="map-info">{hovered?.nom ? `${hovered.nom} — ${hovered.value === null ? '—' : `${displayTemp(hovered.value, units.temp)} ${t}`}` : (region ? region.properties.nom : 'France')}</span>
+        <span className="map-info">{hovered?.nom ? `${hovered.nom} — ${hovered.value === null ? '—' : `max ${displayTemp(hovered.value, units.temp)} ${t}`}` : (region ? region.properties.nom : 'France')}</span>
       </div>
 
-      {(regionsQuery.isLoading || (region && deptsQuery.isLoading) || choropleth.isFetching) && (
+      {(regionsQuery.isLoading || deptsQuery.isLoading || choropleth.isFetching) && (
         <p className="loading">Chargement de la carte…</p>
       )}
-      {(regionsQuery.isError || choropleth.isError) && <p className="error error--banner">Impossible de charger la carte. Réessayez.</p>}
+      {(regionsQuery.isError || deptsQuery.isError || choropleth.isError) && <p className="error error--banner">Impossible de charger la carte. Réessayez.</p>}
 
       {project && (
         <div className="map-wrap">
@@ -87,13 +105,14 @@ export function MapView() {
                   className={`map-region${hover === f.properties.code ? ' is-hover' : ''}`}
                   onMouseEnter={() => setHover(f.properties.code)} onMouseLeave={() => setHover(null)}
                   onClick={() => onPick(f)}>
-                  <title>{f.properties.nom}{v !== null ? ` — ${displayTemp(v, units.temp)} ${t}` : ''}</title>
+                  <title>{f.properties.nom}{v !== null ? ` — max ${displayTemp(v, units.temp)} ${t}` : ''}</title>
                 </path>
               )
             })}
           </svg>
           {values && vmax > vmin && (
             <div className="map-legend">
+              <span className="map-legend__caption">Temp. max</span>
               <span>{displayTemp(vmin, units.temp)} {t}</span>
               <div className="map-legend__bar" style={{ background: `linear-gradient(90deg, ${rampColor(0)}, ${rampColor(0.5)}, ${rampColor(1)})` }} />
               <span>{displayTemp(vmax, units.temp)} {t}</span>
