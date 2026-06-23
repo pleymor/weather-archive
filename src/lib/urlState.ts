@@ -1,6 +1,6 @@
 import type { Location } from './types'
 
-export type AppMode = 'charts' | 'day' | 'years' | 'map'
+export type AppMode = 'charts' | 'day' | 'map'
 
 export interface AppState {
   mode: AppMode
@@ -13,7 +13,7 @@ export interface AppState {
 }
 
 export const EMPTY_STATE: AppState = {
-  mode: 'charts',
+  mode: 'day',
   location: null,
   start: '',
   end: '',
@@ -21,7 +21,7 @@ export const EMPTY_STATE: AppState = {
   compare: null,
 }
 
-const MODES: AppMode[] = ['charts', 'day', 'years', 'map']
+const MODES: AppMode[] = ['charts', 'day', 'map']
 
 function encodeLocation(prefix: string, loc: Location, p: URLSearchParams) {
   p.set(`${prefix}lat`, loc.latitude.toFixed(4))
@@ -51,7 +51,7 @@ function decodeLocation(prefix: string, p: URLSearchParams): Location | null {
 /** Serializes app state to a query string (without leading "?"). */
 export function encodeState(state: AppState): string {
   const p = new URLSearchParams()
-  if (state.mode !== 'charts') p.set('mode', state.mode)
+  if (state.mode !== 'day') p.set('mode', state.mode)
   if (state.location) encodeLocation('', state.location, p)
   if (state.start) p.set('start', state.start)
   if (state.end) p.set('end', state.end)
@@ -65,7 +65,7 @@ export function decodeState(search: string): AppState {
   const p = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search)
   const rawMode = p.get('mode') as AppMode | null
   return {
-    mode: rawMode && MODES.includes(rawMode) ? rawMode : 'charts',
+    mode: rawMode && MODES.includes(rawMode) ? rawMode : 'day',
     location: decodeLocation('', p),
     start: p.get('start') ?? '',
     end: p.get('end') ?? '',

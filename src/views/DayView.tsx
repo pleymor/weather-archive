@@ -1,9 +1,10 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useAppState } from '../state/AppStateContext'
 import { useSettings } from '../state/SettingsContext'
 import { useWeather } from '../hooks/useWeather'
 import { useHourly } from '../hooks/useHourly'
 import { HourlyForecast } from '../components/HourlyForecast'
+import { RecordsHistory } from '../components/RecordsHistory'
 import { validateSingleDate, formatLongDate, maxDate } from '../lib/dates'
 import { apiErrorMessage } from '../lib/apiError'
 import { displayTemp, displayWind, tempUnitLabel, windUnitLabel } from '../lib/units'
@@ -19,6 +20,7 @@ export function DayView() {
   const { state, setDate } = useAppState()
   const { units } = useSettings()
   const { location, date } = state
+  const [showRecords, setShowRecords] = useState(false)
 
   // Default to today (Open-Meteo serves provisional values for the current day).
   useEffect(() => {
@@ -87,6 +89,15 @@ export function DayView() {
               <HourlyForecast hours={hourly.data} units={units} />
             </>
           )}
+
+          <div className="disclosure">
+            <button type="button" className="disclosure__toggle" aria-expanded={showRecords}
+              onClick={() => setShowRecords((v) => !v)}>
+              <span>📜 Records &amp; histoire du lieu</span>
+              <span className="disclosure__chevron" aria-hidden="true">{showRecords ? '▾' : '▸'}</span>
+            </button>
+            {showRecords && <RecordsHistory location={location} date={date} />}
+          </div>
         </>
       )}
     </section>

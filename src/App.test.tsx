@@ -18,11 +18,11 @@ function renderApp() {
 }
 
 describe('App', () => {
-  it('defaults to the charts mode and can switch to day mode', async () => {
+  it('defaults to the day mode and can switch to période', async () => {
     renderApp()
-    expect(screen.getByRole('tab', { name: /graphiques/i })).toHaveAttribute('aria-selected', 'true')
-    await userEvent.click(screen.getByRole('tab', { name: /jour/i }))
     expect(screen.getByRole('tab', { name: /jour/i })).toHaveAttribute('aria-selected', 'true')
+    await userEvent.click(screen.getByRole('tab', { name: /période/i }))
+    expect(screen.getByRole('tab', { name: /période/i })).toHaveAttribute('aria-selected', 'true')
   })
 
   it('opens the location search from the context bar', async () => {

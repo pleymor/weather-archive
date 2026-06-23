@@ -1,22 +1,19 @@
 import { ContextBar } from './components/ContextBar'
 import { ChartsView } from './views/ChartsView'
 import { DayView } from './views/DayView'
-import { YearsView } from './views/YearsView'
 import { MapView } from './views/MapView'
 import { useAppState } from './state/AppStateContext'
 import type { AppMode } from './lib/urlState'
 import './App.css'
 
 const TABS: { mode: AppMode; icon: string; label: string }[] = [
-  { mode: 'charts', icon: '📈', label: 'Graphiques' },
   { mode: 'day', icon: '📅', label: 'Jour' },
-  { mode: 'years', icon: '📜', label: 'Records' },
+  { mode: 'charts', icon: '📈', label: 'Période' },
   { mode: 'map', icon: '🗺️', label: 'Carte' },
 ]
 
 function renderView(mode: AppMode) {
   if (mode === 'day') return <DayView />
-  if (mode === 'years') return <YearsView />
   if (mode === 'map') return <MapView />
   return <ChartsView />
 }
@@ -26,15 +23,7 @@ export default function App() {
   return (
     <div className="app">
       <div className="aurora" aria-hidden="true" />
-      <header className="app-header">
-        <div className="brand">
-          <span className="brand__logo" aria-hidden="true">⛅</span>
-          <div>
-            <h1>Archives Météo</h1>
-            <p className="brand__tag">Le climat passé, partout en France</p>
-          </div>
-        </div>
-      </header>
+      <h1 className="sr-only">Archives Météo</h1>
 
       <nav className="tabs" role="tablist" aria-label="Mode d'affichage">
         {TABS.map((t) => (

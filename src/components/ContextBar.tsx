@@ -1,14 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAppState } from '../state/AppStateContext'
 import {
-  formatShortDate, validateRange, validateSingleDate, maxDate, toISODate, rangeForDays,
+  formatShortDate, validateRange, validateSingleDate, maxDate, rangeForDays,
 } from '../lib/dates'
-import { monthDay } from '../lib/insights'
 import type { AppState } from '../lib/urlState'
 import { LocationSearch } from './LocationSearch'
 import { DatePicker } from './DatePicker'
 import { DateRangePicker } from './DateRangePicker'
-import { MonthDayPicker } from './MonthDayPicker'
 
 const PRESETS = [
   { label: '7 jours', days: 7 },
@@ -26,10 +24,6 @@ function dateSummary(state: AppState): string | null {
     return state.start && state.end && validateRange(state.start, state.end).ok
       ? `${formatShortDate(state.start)} → ${singleLabel(state.end)}`
       : null
-  }
-  if (state.mode === 'years') {
-    const md = monthDay(state.date || toISODate(new Date()))
-    return `${formatShortDate(`2000-${md}`)} · ttes années`
   }
   const d = state.date && validateSingleDate(state.date).ok ? state.date : maxDate()
   return singleLabel(d)
@@ -55,9 +49,6 @@ function DateEditor({ onDone }: { onDone: () => void }) {
         </div>
       </div>
     )
-  }
-  if (state.mode === 'years') {
-    return <MonthDayPicker value={state.date} onChange={setDate} />
   }
   const d = state.date && validateSingleDate(state.date).ok ? state.date : maxDate()
   return <DatePicker value={d} onChange={(v) => { setDate(v); onDone() }} />

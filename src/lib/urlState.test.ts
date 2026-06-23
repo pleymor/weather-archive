@@ -14,11 +14,12 @@ describe('urlState', () => {
   })
 
   it('omits default mode and empty fields from the query', () => {
-    expect(encodeState(EMPTY_STATE)).toBe('')
-    const q = encodeState({ ...EMPTY_STATE, mode: 'day', date: '2021-07-14' })
-    expect(q).toContain('mode=day')
+    expect(encodeState(EMPTY_STATE)).toBe('') // mode 'day' is the default → omitted
+    const q = encodeState({ ...EMPTY_STATE, date: '2021-07-14' })
     expect(q).toContain('date=2021-07-14')
+    expect(q).not.toContain('mode=')
     expect(q).not.toContain('start=')
+    expect(encodeState({ ...EMPTY_STATE, mode: 'charts' })).toContain('mode=charts')
   })
 
   it('decodes a comparison location', () => {
@@ -29,7 +30,7 @@ describe('urlState', () => {
 
   it('falls back to defaults on garbage input', () => {
     const decoded = decodeState('?mode=nonsense&lat=abc')
-    expect(decoded.mode).toBe('charts')
+    expect(decoded.mode).toBe('day')
     expect(decoded.location).toBeNull()
   })
 
