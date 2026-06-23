@@ -6,11 +6,13 @@ import { mapWithConcurrency } from '../lib/async'
 /** Max simultaneous archive requests, to stay under Open-Meteo's rate limit. */
 const MAP_CONCURRENCY = 4
 
-/** Max temperature (°C) per feature code for a single day, computed at each centroid. */
+export interface CellTemps { min: number | null; max: number | null }
+
+/** Min & max temperature (°C) per feature code for a single day, at each centroid. */
 export function useChoropleth(
   features: GeoFeature[],
   date: string,
-): UseQueryResult<Map<string, number | null>> {
+): UseQueryResult<Map<string, CellTemps>> {
   const codes = features.map((f) => f.properties.code).join(',')
   return useQuery({
     queryKey: ['choropleth', date, codes],
@@ -21,7 +23,8 @@ export function useChoropleth(
       const entries = await mapWithConcurrency(features, MAP_CONCURRENCY, async (f) => {
         const [lon, lat] = centroid(f)
         const series = await loadWeather({ latitude: lat, longitude: lon, startDate: date, endDate: date })
-        return [f.properties.code, series.days[0]?.tempMax ?? null] as const
+        const d = series.days[0]
+        return [f.properties.code, { min: d?.tempMin ?? null, max: d?.tempMax ?? null }] as const
       })
       return new Map(entries)
     },
